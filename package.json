@@ -1,6 +1,6 @@
 {
   "name": "gwiki",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "main.js",
   "scripts": {
@@ -34,7 +34,8 @@
       "!.git/**"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "book.ico"
     },
     "nsis": {
       "oneClick": true,

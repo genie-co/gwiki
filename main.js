@@ -8,6 +8,13 @@ function createWindow() {
     height: 900,
     minWidth: 900,
     minHeight: 700,
+    icon: path.join(__dirname, 'book.ico'),
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#321622',
+      symbolColor: '#A25176',
+      height: 25,
+    },
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -20,6 +27,7 @@ function createWindow() {
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null)
   createWindow()
+
   autoUpdater.checkForUpdatesAndNotify()
 
   app.on('activate', () => {
