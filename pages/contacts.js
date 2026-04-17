@@ -6,9 +6,9 @@ PAGES.contacts = {
   body: /*html*/ `
     <style>.contacts-table td { text-align: left; } .contacts-table td:last-child { text-align: right; font-family: Consolas, monospace;}</style>
     <div style="display: flex; gap: 1rem; align-items: flex-start;">
-    <table border="0" class="contacts-table" style="width: 355px; table-layout: auto;">
+    <table border="0" class="contacts-table" style="width: auto; table-layout: auto;">
             <colgroup>
-              <col style="width: 210px;">
+              <col style="min-width: 210px; text-align: left;">
               <col style="width: 145px;">
             </colgroup>
             <tr>
@@ -62,12 +62,12 @@ PAGES.contacts = {
                 <td>(855) 471-4231</td>
             </tr>
         </table>        
-    <table border="0" class="contacts-table" style="width: 355px; table-layout: auto;">
+    <table border="0" class="contacts-table" style="width: auto; table-layout: auto;">
             <colgroup>
-              <col style="width: 210px;">
+              <col style="min-width: 210px; text-align: left;">
               <col style="width: 145px;">
             </colgroup>
-       
+
             <tr>
                 <td>Amazon Customer Service</td>
                 <td>(888) 280-4331</td>
@@ -121,12 +121,12 @@ PAGES.contacts = {
                 <td>(800) 323-3674</td>
             </tr>
             </table>
-            <table border="0" class="contacts-table" style="width: 355px; table-layout: auto;">
+            <table border="0" class="contacts-table" style="width: auto; table-layout: auto;">
             <colgroup>
-              <col style="width: 210px;">
+              <col style="min-width: 210px; text-align: left;">
               <col style="width: 145px;">
             </colgroup>
-       
+
             <tr>
                 <td>Hearing Genie</td>
                 <td>(844) 469-3277</td>
@@ -180,12 +180,12 @@ PAGES.contacts = {
                 <td>(800) 843-6430</td>
             </tr>
             </table>
-            <table border="0" class="contacts-table" style="width: 355px; table-layout: auto;">
+            <table border="0" class="contacts-table" style="width: auto; table-layout: auto;">
             <colgroup>
-              <col style="width: 210px;">
+              <col style="min-width: 210px; text-align: left;">
               <col style="width: 145px;">
             </colgroup>
-       
+
             <tr>
                 <td>Refill Genie</td>
                 <td>(929) 274-3052</td>
