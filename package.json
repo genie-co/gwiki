@@ -34,8 +34,7 @@
       "!.git/**"
     ],
     "win": {
-      "target": "nsis",
-      "icon": "Untitled design (2) (2).ico"
+      "target": "nsis"
     },
     "nsis": {
       "oneClick": true
