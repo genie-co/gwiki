@@ -1,6 +1,6 @@
 {
   "name": "gwiki",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "main.js",
   "scripts": {
@@ -37,7 +37,8 @@
       "target": "nsis"
     },
     "nsis": {
-      "oneClick": true
+      "oneClick": true,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "publish": {
       "provider": "github",
