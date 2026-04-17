@@ -1,0 +1,52 @@
+{
+  "name": "gwiki",
+  "version": "1.0.2",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package": "electron-builder --win",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/genie-co/gwiki.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/genie-co/gwiki/issues"
+  },
+  "homepage": "https://github.com/genie-co/gwiki#readme",
+  "devDependencies": {
+    "electron": "^41.2.1",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.genie-co.gwiki",
+    "productName": "gwiki",
+    "files": [
+      "**/*",
+      "!*.csv",
+      "!*.py",
+      "!.git/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "Untitled design (2) (2).ico"
+    },
+    "nsis": {
+      "oneClick": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "genie-co",
+      "repo": "gwiki"
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3"
+  }
+}

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gWiki</title>
+    <link rel="icon" type="image/png" href="Untitled design (2) (2).png">
+    <link rel="shortcut icon" type="image/x-icon" href="Untitled design (2) (2).ico">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/csParts?family=Nunito:ital,wght@0,400;0,600;0,800;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <header>
+        <a class="logo" href="#" onclick="navigate('home')">gWiki<img src="Untitled design (2) (2).png" style="height:1.6em; vertical-align:middle; margin-left:0.3em;"></a>
+        <div class="search-wrap" style="position:relative;">
+            <input type="search" id="search" placeholder="Search pages…" autocomplete="off" />
+            <div id="search-results"></div>
+        </div>
+        <div id="current-week-code"></div>
+        <nav class="topnav">
+            <div class="nav-group">
+                <button class="nav-group-btn" onclick="navigate('home')">Home</button>
+            </div>
+            <div class="nav-group">
+                <button class="nav-group-btn" onclick="navigate('refHub')">Reference</button>
+                    <div class="nav-dropdown">             
+                        <a class="nav-link" onclick="navigate('glossary')">Glossary</a>
+                        <a class="nav-link" onclick="navigate('FAQ')">FAQ</a>
+                        <a class="nav-link" onclick="navigate('contacts')">Contact Directory</a>
+                        <a class="nav-link" onclick="navigate('announcements')">Announcements</a>
+                        <a class="nav-link" onclick="navigate('dealers')">Dealers</a>
+                        <a class="nav-link" onclick="navigate('emailTemplates')">Email Templates</a>
+                    </div>
+            </div>
+            <div class="nav-group">
+                <button class="nav-group-btn" onclick="navigate('accessoriesHub')">Accessories</button>
+                    <div class="nav-dropdown">
+                        <a class="nav-link" onclick="navigate('compatibility')">Compatibilty</a>
+                        <a class="nav-link" onclick="navigate('STB')">Safety Sensors</a>
+                        <a class="nav-link" onclick="navigate('remotes')">Remotes</a>
+                        <a class="nav-link" onclick="navigate('keypads')">Keypads</a>
+                        <a class="nav-link" onclick="navigate('homeLink')">HomeLink</a>
+                        <a class="nav-link" onclick="navigate('aladdinApp')">Aladdin</a>
+                    </div>
+            </div>
+            <div class="nav-group">
+                <button class="nav-group-btn" onclick="navigate('productsHub')">Products</button>
+                    <div class="nav-dropdown">
+                        <a class="nav-link" onclick="navigate('catalog')">Catalog</a>
+                        <a class="nav-link" onclick="navigate('specs')">Specs</a>
+                        <a class="nav-link" onclick="navigate('manuals')">Manuals</a>
+                        <a class="nav-link" onclick="navigate('parts')">Parts</a>
+                    </div>
+            </div>
+            <div class="nav-group">
+                <button class="nav-group-btn" onclick="navigate('troubleshootingHub')">Troubleshooting</button>
+                    <div class="nav-dropdown">
+                        <a class="nav-link" onclick="navigate('guides')">Guides</a>
+                        <a class="nav-link" onclick="navigate('statusLights')">Status Lights</a>
+                        <a class="nav-link" onclick="navigate('wifiIssues')">WiFi Issues</a>
+                    </div>
+            </div>
+            <div class="nav-group">
+                <button class="nav-group-btn" onclick="navigate('processesHub')">Processes</button>
+                    <div class="nav-dropdown">
+                        <a class="nav-link" onclick="navigate('warrantyClaims')">Warranty Claims</a>
+                        <a class="nav-link" onclick="navigate('returnsRMA')">Returns / RMA</a>
+                        <a class="nav-link" onclick="navigate('sops')">Internal SOPs</a>
+                        <a class="nav-link" onclick="navigate('noteTaking')">Note Taking</a>
+                    </div>
+            </div>
+    </div>
+    </nav>
+    </header>
+    <div class="layout">
+    <main id="main-content">
+    </main>
+    </div>
+    <footer></footer>
+
+    <script src="pages/config.js"></script>
+    <script src="pages/infoHub.js"></script>
+    <script src="pages/accessoriesHub.js"></script>
+    <script src="pages/productsHub.js"></script>
+    <script src="pages/troubleshootingHub.js"></script>
+    <script src="pages/processesHub.js"></script>
+    <script src="pages/aladdinApp.js"></script>
+    <script src="pages/announcements.js"></script>
+    <script src="pages/catalog.js"></script>
+    <script src="pages/compatibility.js"></script>
+    <script src="pages/contacts.js"></script>
+    <script src="pages/dealers-data.js"></script>
+    <script src="pages/dealers.js"></script>
+    <script src="pages/emailTemplates.js"></script>
+    <script src="pages/FAQ.js"></script>
+    <script src="pages/glossary.js"></script>
+    <script src="pages/guides.js"></script>
+    <script src="pages/home.js"></script>
+    <script src="pages/homeLink.js"></script>
+    <script src="pages/keypads.js"></script>
+    <script src="pages/manuals.js"></script>
+    <script src="pages/noteTaking.js"></script>
+    <script src="pages/remotes.js"></script>
+    <script src="pages/parts.js"></script>
+    <script src="pages/returnsRMA.js"></script>
+    <script src="pages/sops.js"></script>
+    <script src="pages/specs.js"></script>
+    <script src="pages/statusLights.js"></script>
+    <script src="pages/STB.js"></script>
+    <script src="pages/warrantyClaims.js"></script>
+    <script src="pages/wifiIssues.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
