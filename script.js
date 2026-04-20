@@ -87,17 +87,47 @@
 
             if (id === 'catalog') initCatalog();
             if (id === 'dealers') initDealers();
+            if (id === 'parts') initParts();
 
-            main.classList.toggle('parts-wide', id === 'parts');
-            if (id === 'parts') {
-                document.querySelectorAll('tr.section-row').forEach(row => {
-                    let next = row.nextElementSibling;
-                    while (next && !next.classList.contains('section-row')) {
-                        next.style.display = 'none';
-                        next = next.nextElementSibling;
-                    }
+            const noPageSearch = ['parts', 'dealers', 'catalog'];
+            if (!noPageSearch.includes(id)) initPageSearch();
+        }
+
+        
+
+        function highlightPageText(root, query) {
+            const ql = query.toLowerCase();
+            const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+            let count = 0;
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+                acceptNode(node) {
+                    const tag = node.parentNode?.tagName?.toLowerCase();
+                    if (['script', 'style', 'mark', 'input', 'textarea'].includes(tag)) return NodeFilter.FILTER_REJECT;
+                    return node.textContent.toLowerCase().includes(ql) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+                }
+            });
+            const nodes = [];
+            let n;
+            while ((n = walker.nextNode())) nodes.push(n);
+            nodes.forEach(textNode => {
+                const matches = [...textNode.textContent.matchAll(re)];
+                if (!matches.length) return;
+                count += matches.length;
+                const frag = document.createDocumentFragment();
+                let last = 0;
+                const txt = textNode.textContent;
+                matches.forEach(m => {
+                    if (m.index > last) frag.appendChild(document.createTextNode(txt.slice(last, m.index)));
+                    const mark = document.createElement('mark');
+                    mark.className = 'page-mark';
+                    mark.textContent = m[0];
+                    frag.appendChild(mark);
+                    last = m.index + m[0].length;
                 });
-            }
+                if (last < txt.length) frag.appendChild(document.createTextNode(txt.slice(last)));
+                textNode.parentNode.replaceChild(frag, textNode);
+            });
+            return count;
         }
 
         document.getElementById('main-content').addEventListener('click', function (e) {

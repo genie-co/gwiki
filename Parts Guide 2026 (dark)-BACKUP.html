@@ -1,37 +1,324 @@
-﻿PAGES.parts = {
-    title: "Parts Guide",
-    desc: "Parts list for all Genie openers - searchable and collapsible by model",
-    section: "Products",
-    tags: ["parts", "parts book", "lookup", "reference", "replacement"],
-    body: /*html*/`
-<div class="page-layout parts-page">
-  <div class="contents" id="parts-toc">
-    <h1>Contents</h1>
-  </div>
-  <div class="parts-main">
-    <div class="parts-controls">
-      <input id="parts-search" type="text" placeholder="Search..." aria-label="Search parts">
-      <button onclick="partsExpandAll()">Expand All</button>
-      <button onclick="partsCollapseAll()">Collapse All</button>
-      
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parts & Price v2026</title>
+    <link rel="icon" type="image/png" href="book-209.png" />
+    <style>
+        :root {
+            --controls-height: 44px;
+            --toc-width: 33.333vw;
+            --accent: #808080;
+            --accent-dark: #606060;
+            --border: #2e2e2e;
+            --hover-bg: #252525;
+            --zebra: #222222;
+            --text: #e8e8e8;
+            --muted: #aaa;
+            --mark-bg: #333333;
+        }
+
+        * { box-sizing: border-box; }
+
+        body { margin: 0; background: #1c1c1c; font-family: Consolas, 'Courier New', monospace; font-size: 13px; color: var(--text); }
+
+        #controls {
+            position: sticky; top: 0; z-index: 200;
+            display: flex; gap: 8px; align-items: center;
+            padding: 6px 12px; background: #1c1c1c;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 4px rgba(0,0,0,.4);
+        }
+
+        #controls-title { font-size: 13px; font-weight: bold; color: var(--accent); white-space: nowrap; margin-right: 4px; }
+
+        #search {
+            flex: 1; padding: 5px 10px; font-family: inherit; font-size: 13px;
+            border: 1px solid var(--border); border-radius: 3px;
+            color: var(--text); background: #1c1c1c;
+        }
+
+        #search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+        #search::placeholder { color: var(--muted); }
+
+        #controls button, #controls a#export-btn {
+            padding: 5px 12px; font-family: inherit; font-size: 12px;
+            background: var(--accent); color: #fff;
+            border: none; border-radius: 3px; cursor: pointer;
+            white-space: nowrap; text-decoration: none; display: inline-block;
+        }
+
+        #controls button:hover, #controls a#export-btn:hover { background: var(--accent-dark); }
+        #controls button:focus, #controls a#export-btn:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        #page-wrap { display: flex; }
+
+        #toc {
+            flex: 1; width: var(--toc-width); min-width: 0;
+            position: sticky; top: var(--controls-height);
+            max-height: calc(100vh - var(--controls-height));
+            overflow-y: auto; background: #1c1c1c;
+            border-right: 1px solid var(--border); transition: transform .2s;
+            scrollbar-color: #3a3a3a #1c1c1c;
+            scrollbar-width: thin;
+        }
+        #toc::-webkit-scrollbar { width: 6px; }
+        #toc::-webkit-scrollbar-track { background: #1c1c1c; }
+        #toc::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 3px; }
+        #toc::-webkit-scrollbar-thumb:hover { background: #4a4a4a; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1c1c1c; }
+        ::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4a4a4a; }
+
+        #toc a {
+            display: block; padding: 5px 10px 5px 14px;
+            color: var(--text); text-decoration: none;
+            font-size: 12px; line-height: 1.4; white-space: normal;
+            border-left: 2px solid transparent; border-bottom: 1px solid var(--border);
+        }
+
+        #toc a:hover  { background: var(--hover-bg); border-left-color: var(--accent); }
+        #toc a:focus  { outline: 2px solid var(--accent); outline-offset: -2px; }
+        #toc a.active { background: var(--hover-bg); border-left-color: var(--accent); font-weight: bold; }
+
+        .toc-count {
+            display: inline-block; margin-left: 5px; padding: 1px 5px;
+            background: var(--border); color: var(--muted);
+            font-size: 10px; border-radius: 8px; vertical-align: middle;
+        }
+
+        .toc-cat-tag {
+            display: inline-block; margin-left: 4px; padding: 1px 4px;
+            font-size: 9px; border-radius: 4px; vertical-align: middle;
+            color: #888; background: transparent; font-weight: normal;
+            letter-spacing: .04em; text-transform: lowercase;
+        }
+
+        .toc-group-label {
+            padding: 10px 12px 6px; font-size: 10px; font-weight: bold;
+            color: var(--muted); letter-spacing: .1em; text-transform: uppercase;
+            background: #1c1c1c; border-bottom: 2px solid var(--border);
+        }
+
+        #toc-toggle { display: none; }
+
+        #table-wrap { flex: 2; overflow-x: auto; background: #1c1c1c; padding-left: 10px; }
+
+        table { border-collapse: separate; border-spacing: 0; width: 100%; table-layout: fixed; }
+
+        col.col-partnum { width: 15%; }
+        col.col-desc    { width: 42%; }
+        col.col-notes   { width: 36%; }
+        col.col-qty     { width: 7%; }
+
+        th {
+            padding: 7px 8px; text-align: left;
+            border-bottom: 2px solid var(--border); color: var(--muted);
+            font-size: 11px; letter-spacing: .05em; text-transform: uppercase; background: #1c1c1c;
+        }
+
+        td { padding: 5px 8px; text-align: left; border-bottom: 1px solid var(--border); color: var(--text); }
+
+        tr.alt:not(:has(td.section-header)) { background: var(--zebra); }
+        tr:hover:not(:has(td.section-header)) { background: var(--hover-bg); }
+        tr.obsolete td { background-color: #3a3a3a !important; color: #999 !important; }
+
+        tr.cat-header-row td {
+            background: transparent;
+            border-bottom: 1px solid #3a3a3a;
+            padding: 20px 8px 4px 8px;
+            color: #808080;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        td.section-header {
+            background: linear-gradient(to bottom, transparent 6px, #2a2a2a 6px);
+            border: none; border-radius: 4px;
+            color: #f0f0f0; cursor: pointer;
+            user-select: none; font-size: 12px; font-weight: bold; letter-spacing: .02em;
+            padding: 11px 100px 6px 8px;
+            vertical-align: top; position: relative;
+        }
+
+        td.section-header::before {
+            content: ''; position: absolute;
+            inset: 6px 0 0 0;
+            border: 1px solid #d0d0d0; border-radius: 4px;
+            pointer-events: none;
+        }
+
+        td.section-header:hover { background: linear-gradient(to bottom, transparent 6px, #303030 6px); }
+
+
+        .toc-group-label.cat-powerhead,
+        .toc-group-label.cat-rail { color: var(--accent); border-bottom-color: var(--accent); }
+
+        mark { background: var(--mark-bg); color: var(--text); border-radius: 2px; padding: 0 1px; }
+
+        td a, td a:visited { color: var(--text); text-decoration: none; font-family: inherit; }
+        td a:hover { color: var(--accent-dark); }
+
+        #back-to-top {
+            position: fixed; bottom: 24px; right: 24px; display: none;
+            padding: 7px 14px; background: var(--accent); color: #fff;
+            border: none; border-radius: 3px; cursor: pointer;
+            font-family: inherit; font-size: 13px;
+            box-shadow: 0 2px 6px rgba(0,0,0,.25); z-index: 300;
+        }
+
+        #back-to-top:hover { background: var(--accent-dark); }
+        #back-to-top:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        .copy-btn {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 1px 4px;
+            font-size: 11px;
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid transparent;
+            border-radius: 2px;
+            cursor: pointer;
+            font-family: inherit;
+            vertical-align: middle;
+            opacity: 0;
+            transition: opacity 0.1s, color 0.1s;
+            line-height: 1;
+        }
+        tr:hover .copy-btn { opacity: 1; }
+        .copy-btn:hover { border-color: var(--border); color: var(--accent); }
+
+        /* ── Diagram button ─────────────────────────────────────────── */
+        .diag-btn {
+            position: absolute;
+            right: 8px;
+            top: 6px;
+            bottom: 0;
+            margin: auto 0;
+            height: fit-content;
+            background: none;
+            border: none;
+            color: #808080;
+            font-family: inherit;
+            font-size: 9px;
+            padding: 2px 4px;
+            cursor: pointer;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            transition: color .15s;
+        }
+        .diag-btn:hover { color: #f0f0f0; }
+
+        /* ── Diagram modal ───────────────────────────────────────────── */
+        #diag-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            transition: background .2s;
+        }
+        #diag-overlay.open {
+            background: rgba(0,0,0,0.55);
+            pointer-events: all;
+        }
+        #diag-box {
+            background: #1e1e1e;
+            border-radius: 5px;
+            padding: 20px;
+            max-width: 99vw;
+            max-height: 99vh;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 12px 40px rgba(0,0,0,.3);
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity .2s, transform .2s;
+        }
+        #diag-overlay.open #diag-box {
+            opacity: 1;
+            transform: scale(1);
+        }
+        #diag-title {
+            font-family: inherit;
+            font-size: 11px;
+            color: var(--muted);
+            margin: 0 28px 12px 0;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            flex-shrink: 0;
+        }
+        #diag-box img {
+            display: block;
+            max-width: 100%;
+            max-height: calc(99vh - 64px);
+            object-fit: contain;
+        }
+        #diag-close {
+            position: absolute; top: 10px; right: 12px;
+            background: none; border: none; font-size: 20px;
+            cursor: pointer; color: #bbb; line-height: 1;
+            transition: color .15s;
+        }
+        #diag-close:hover { color: #eee; }
+
+        @media (max-width: 768px) {
+            #toc-toggle { display: inline-block; }
+            #toc {
+                position: fixed; top: var(--controls-height); left: 0;
+                height: calc(100vh - var(--controls-height)); max-height: none;
+                z-index: 150; transform: translateX(-100%);
+                box-shadow: 2px 0 10px rgba(0,0,0,.2);
+            }
+            #toc.open { transform: translateX(0); }
+            #page-wrap { display: block; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="controls">
+              <span id="controls-title">Parts &amp; Price v2026</span>
+        <input id="search" type="text" placeholder="Search… (press / to focus)" aria-label="Search parts" />
+        <button onclick="expandAll()">Expand All</button>
+        <button onclick="collapseAll()">Collapse All</button>
+        <a id="export-btn" href="Parts &amp; Price.xlsx" download aria-label="Download Parts &amp; Price spreadsheet">Download</a>
     </div>
-    <div class="parts-table-wrap" id="parts-table-wrap">
-      <table class="parts-table">
-        <colgroup>
-          <col style="width:15%">
-          <col style="width:43%">
-          <col style="width:35%">
-          <col style="width:7%">
-        </colgroup>
-        <thead>
-          <tr>
-            <th>Part Number</th>
-            <th>Description</th>
-            <th>Notes</th>
-            <th>Qty</th>
-          </tr>
-        </thead>
-        <tbody id="parts-tbody">        <tr>
+
+    <div id="page-wrap">
+        <nav id="toc" aria-label="Sections"></nav>
+        <div id="table-wrap">
+        <table>
+            <colgroup>
+                <col class="col-partnum" />
+                <col class="col-desc" />
+                <col class="col-notes" />
+                <col class="col-qty" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th scope="col">Part Number</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Notes</th>
+                    <th scope="col">Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+        <tr>
             <td class="section-header" colspan="4">6072 6172 6070 6170 — Powerhead</td>
         </tr>
         <tr>
@@ -210,6 +497,7 @@
         </tr>
         <tr>
             <td class="section-header" colspan="4">4063 4063B 4064H 4064H-B 4164H 4164H-B — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>38240A.S</td>
@@ -357,6 +645,7 @@
         </tr>
         <tr>
             <td class="section-header" colspan="4">4063 4063B 4064H 4064H-B 4164H 4164H-B — Rail</td>
+            <td>
         </tr>
         <tr>
             <td>38123A.S</td>
@@ -481,6 +770,7 @@
         <tr>
             <td class="section-header" colspan="4">3022 3024H 3024H-B 3042 3124H 3124H-B 3142 4022 4042 4124H 4124H-B
                 4142 — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>38240A.S</td>
@@ -652,6 +942,7 @@
         </tr>
         <tr>
             <td class="section-header" colspan="4">G3120HL G3120HL-B — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>42779R.S</td>
@@ -751,6 +1042,7 @@
         </tr>
         <tr>
             <td class="section-header" colspan="4">1028 1028H 2028 2028H — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>41925R.S</td>
@@ -850,6 +1142,7 @@
         </tr>
         <tr>
             <td class="section-header" colspan="4">1028B 2028B 2028HB — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>41925R.S</td>
@@ -973,6 +1266,7 @@
         </tr>
         <tr>
             <td class="section-header" colspan="4">1128 2128 2128H — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>40964R.S</td>
@@ -1084,6 +1378,7 @@
         </tr>
         <tr>
             <td class="section-header" colspan="4">1128B 2128B 2128HB — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>40964R.S</td>
@@ -1213,8 +1508,9 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        3024H 3124H 4124H 3120H 1028 1128 2028 2128 3022 3042 3142 4022 4042
+        <span class="toggle">▶</span>3024H 3124H 4124H 3120H 1028 1128 2028 2128 3022 3042 3142 4022 4042
                 4142 - Rail</td>
+            <td>
         </tr>
         <tr>
             <td>36728A.S</td>
@@ -1482,7 +1778,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        1035 1055 — Powerhead</td>
+        <span class="toggle">▶</span>1035 1055 — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>41925R.S</td>
@@ -1570,7 +1867,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        1055B — Powerhead</td>
+        <span class="toggle">▶</span>1055B — Powerhead</td>
+            <td>
         </tr>
         <tr class="obsolete">
             <td>38648T.S</td>
@@ -1694,7 +1992,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        1135 1155 — Powerhead</td>
+        <span class="toggle">▶</span>1135 1155 — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>41925R.S</td>
@@ -1782,7 +2081,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        1155B — Powerhead</td>
+        <span class="toggle">▶</span>1155B — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>41925R.S</td>
@@ -1882,7 +2182,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        2035 2055 3035 3055 3055D — Powerhead</td>
+        <span class="toggle">▶</span>2035 2055 3035 3055 3055D — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>39356R.S</td>
@@ -1988,7 +2289,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        2033 3053 3155 3155L 3155D 3155LD — Powerhead</td>
+        <span class="toggle">▶</span>2033 3053 3155 3155L 3155D 3155LD — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>41932R.S</td>
@@ -2118,7 +2420,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        7035 7055 7055D 7055L — Powerhead</td>
+        <span class="toggle">▶</span>7035 7055 7055D 7055L — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>41932R.S</td>
@@ -2254,7 +2557,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        7053L 7135 7155 7155L 7155D — Powerhead</td>
+        <span class="toggle">▶</span>7053L 7135 7155 7155L 7155D — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>41932R.S</td>
@@ -2420,8 +2724,9 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        1035 1055/B 2033 2035 2055 3035 3053 3055/D 3155 7035 7053L 7055/D
+        <span class="toggle">▶</span>1035 1055/B 2033 2035 2055 3035 3053 3055/D 3155 7035 7053L 7055/D
                 7135 7155/L/D — Rail</td>
+            <td>
         </tr>
         <tr>
             <td>39410R.S</td>
@@ -2545,7 +2850,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        E7155L D7155L — Powerhead</td>
+        <span class="toggle">▶</span>E7155L D7155L — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>42620R.S</td>
@@ -2657,7 +2963,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        3024 4024 4024H 4024H-B — Powerhead</td>
+        <span class="toggle">▶</span>3024 4024 4024H 4024H-B — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>38240A.S</td>
@@ -2787,7 +3094,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        3020H 3020H-B — Powerhead</td>
+        <span class="toggle">▶</span>3020H 3020H-B — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>39366A.S</td>
@@ -2893,7 +3201,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        3120H 3120H-B 3120HL 3120HL-B — Powerhead</td>
+        <span class="toggle">▶</span>3120H 3120H-B 3120HL 3120HL-B — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>41816R.S</td>
@@ -3017,7 +3326,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        3062 3064 3064H 4064 — Powerhead</td>
+        <span class="toggle">▶</span>3062 3064 3064H 4064 — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>38240A.S</td>
@@ -3159,7 +3469,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        2562 2564 2564H 2568 2568H — Powerhead</td>
+        <span class="toggle">▶</span>2562 2564 2564H 2568 2568H — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>39045R.S</td>
@@ -3253,7 +3564,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        1022 1024 1042 2022 2022-700 2024 2027 2042 — Powerhead</td>
+        <span class="toggle">▶</span>1022 1024 1042 2022 2022-700 2024 2027 2042 — Powerhead</td>
+            <td>
         </tr>
         <tr class="obsolete">
             <td>36435D.S</td>
@@ -3323,7 +3635,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        1022 1024 1042 2022 2022-700 2024 2027 2042 — Rail</td>
+        <span class="toggle">▶</span>1022 1024 1042 2022 2022-700 2024 2027 2042 — Rail</td>
+            <td>
         </tr>
         <tr class="obsolete">
             <td>36608A.S</td>
@@ -3489,7 +3802,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        Pro99 CMD990 H8000 ISD990 ISD995 ISD1000 4560 — Powerhead</td>
+        <span class="toggle">▶</span>Pro99 CMD990 H8000 ISD990 ISD995 ISD1000 4560 — Powerhead</td>
+            <td>
         </tr>
         <tr class="obsolete">
             <td>33971A.S</td>
@@ -3589,7 +3903,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        Pro99 CMD990 H8000 ISD990 ISD995 ISD1000 4560 — Rail</td>
+        <span class="toggle">▶</span>Pro99 CMD990 H8000 ISD990 ISD995 ISD1000 4560 — Rail</td>
+            <td>
         </tr>
         <tr>
             <td>33950R.S</td>
@@ -3791,8 +4106,9 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        CM7600 CM8600 Pro95 1060 2560 3560 2060L 3060L H4000 H6000 IS/ISL/IMS
+        <span class="toggle">▶</span>CM7600 CM8600 Pro95 1060 2560 3560 2060L 3060L H4000 H6000 IS/ISL/IMS
                 — Powerhead</td>
+            <td>
         </tr>
         <tr class="obsolete">
             <td>35627S.S</td>
@@ -3952,8 +4268,9 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        CM7600 CM8600 Pro95 1060 2560 3560 2060L 3060L H4000 H6000 IS/ISL/IMS
+        <span class="toggle">▶</span>CM7600 CM8600 Pro95 1060 2560 3560 2060L 3060L H4000 H6000 IS/ISL/IMS
                 — Rail</td>
+            <td>
         </tr>
         <tr class="obsolete">
             <td>32658R.S</td>
@@ -4137,7 +4454,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        PMX700 PMX1200 GPS700-IC GPS1200-IC — Powerhead</td>
+        <span class="toggle">▶</span>PMX700 PMX1200 GPS700-IC GPS1200-IC — Powerhead</td>
+            <td>
         </tr>
         <tr class="obsolete">
             <td>27145A.S</td>
@@ -4417,8 +4735,9 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        PMX700 PMX1200 GPS700-IC GPS1200-IC PMX300-IC/B PMX500-IC/B
+        <span class="toggle">▶</span>PMX700 PMX1200 GPS700-IC GPS1200-IC PMX300-IC/B PMX500-IC/B
                 PMX300-IC/A PMX500-IC/A — Rail</td>
+            <td>
         </tr>
         <tr class="obsolete">
             <td>27222A.S</td>
@@ -4728,8 +5047,9 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        PMX300-IC/A PMX500-IC/A PMX300-IC/B PMX500-IC/B IC250 1C250/B —
+        <span class="toggle">▶</span>PMX300-IC/A PMX500-IC/A PMX300-IC/B PMX500-IC/B IC250 1C250/B —
                 Powerhead</td>
+            <td>
         </tr>
         <tr class="obsolete">
             <td>27145A.S</td>
@@ -5031,8 +5351,9 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        PMX300-IC/A PMX500-IC/A PMX300-IC/B PMX500-IC/B GPS700 GPS1200
+        <span class="toggle">▶</span>PMX300-IC/A PMX500-IC/A PMX300-IC/B PMX500-IC/B GPS700 GPS1200
                 GPS700-IC GPS1200-IC — Rail (T-STYLE)</td>
+            <td>
         </tr>
         <tr class="obsolete">
             <td>8028L04.S</td>
@@ -5252,7 +5573,8 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        IC250 IC250/B — Rail (T-STYLE)</td>
+        <span class="toggle">▶</span>IC250 IC250/B — Rail (T-STYLE)</td>
+            <td>
         </tr>
         <tr class="obsolete">
             <td>3359N04.S</td>
@@ -5496,8 +5818,9 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        PCG400 PCG450 PCG500ML PCG600 PCG700ML PCG700FN GCG350L GCG350ML
+        <span class="toggle">▶</span>PCG400 PCG450 PCG500ML PCG600 PCG700ML PCG700FN GCG350L GCG350ML
                 H2000C 1020L 2020L 2020C 2020-CT — Powerhead</td>
+            <td>
         </tr>
         <tr>
             <td>34526R.S</td>
@@ -5783,8 +6106,9 @@
         </tr>
         <tr>
               <td class="section-header" colspan="4">
-        PCG400 PCG450 PCG500ML PCG600 PCG700ML PCG700FN GCG350L GCG350ML
+        <span class="toggle">▶</span>PCG400 PCG450 PCG500ML PCG600 PCG700ML PCG700FN GCG350L GCG350ML
                 H2000C 1020L 2020L 2020C 2020-CT — Rail</td>
+            <td>
         </tr>
         <tr>
             <td>20468R.S</td>
@@ -5949,364 +6273,381 @@
             <td>1</td>
         </tr>
 
-        </tbody>
-      </table>
+            </tbody>
+        </table>
+        </div>
     </div>
-  </div>
-</div>
-<div id="parts-diag-overlay">
-  <div id="parts-diag-box">
-    <button id="parts-diag-close" aria-label="Close">âœ•</button>
-    <div id="parts-diag-title"></div>
-    <img id="parts-diag-img" src="" alt="Parts diagram">
-  </div>
-</div>
-    `
-};
 
-const PARTS_DIAG_FILES = [
-    '6072-6172-6070-6170_Powerhead.svg',
-    '4063-4063B-4064H-4064H-B-4164H-4164H-B_Powerhead.svg',
-    '4063-4063B-4064H-4064H-B-4164H-4164H-B_Rail.svg',
-    '3022-3024H-3024H-B-3042-3124H-3124H-B-3142-4022-4042-4124H-4124H-B-4142_Powerhead.svg',
-    'G3120HL-G3120HL-B_Powerhead.svg',
-    '1028-1028H-2028-2028H_Powerhead.svg',
-    '1028B-2028B-2028HB_Powerhead.svg',
-    '1128-2128-2128H_Powerhead.svg',
-    '1128B-2128B-2128HB_Powerhead.svg',
-    '3024H-3124H-4124H-3120H-1028-1128-2028-2128-3022-3042-3142-4022-4042-4142_Rail.svg',
-    '1035-1055_Powerhead.svg',
-    '1055B_Powerhead.svg',
-    '1135-1155_Powerhead.svg',
-    '1155B_Powerhead.svg',
-    '2035-2055-3035-3055-3055D_Powerhead.svg',
-    '2033-3053-3155-3155L-3155D-3155LD_Powerhead.svg',
-    '7035-7055-7055D-7055L_Powerhead.svg',
-    '7053L-7135-7155-7155L-7155D_Powerhead.svg',
-    '1035-1055-B-2033-2035-2055-3035-3053-3055-D-3155-7035-7053L-7055-D-7135-7155-L-D_Rail.svg',
-    'E7155L-D7155L_Powerhead.svg',
-    '3024-4024-4024H-4024H-B_Powerhead.svg',
-    '3020H-3020H-B_Powerhead.svg',
-    '3120H-3120H-B-3120HL-3120HL-B_Powerhead.svg',
-    '3062-3064-3064H-4064_Powerhead.svg',
-    '2562-2564-2564H-2568-2568H_Powerhead.svg',
-    '1022-1024-1042-2022-2022-700-2024-2027-2042_Powerhead.svg',
-    '1022-1024-1042-2022-2022-700-2024-2027-2042_Rail.svg',
-    'Pro99-CMD990-H8000-ISD990-ISD995-ISD1000-4560_Powerhead.svg',
-    'Pro99-CMD990-H8000-ISD990-ISD995-ISD1000-4560_Rail.svg',
-    'CM7600-CM8600-Pro95-1060-2560-3560-2060L-3060L-H4000-H6000-IS-ISL-IMS_Powerhead.svg',
-    'CM7600-CM8600-Pro95-1060-2560-3560-2060L-3060L-H4000-H6000-IS-ISL-IMS_Rail.svg',
-    'PMX700-PMX1200-GPS700-IC-GPS1200-IC_Powerhead.svg',
-    'PMX700-PMX1200-GPS700-IC-GPS1200-IC-PMX300-IC-B-PMX500-IC-B-PMX300-IC-A-PMX500-IC-A_Rail.svg',
-    'PMX300-IC-A-PMX500-IC-A-PMX300-IC-B-PMX500-IC-B-IC250-1C250-B_Powerhead.svg',
-    'PMX300-IC-A-PMX500-IC-A-PMX300-IC-B-PMX500-IC-B-GPS700-GPS1200-GPS700-IC-GPS1200-IC_Rail-T-STYLE.svg',
-    'IC250-IC250-B_Rail-T-STYLE.svg',
-    'PCG400-PCG450-PCG500ML-PCG600-PCG700ML-PCG700FN-GCG350L-GCG350ML-H2000C-1020L-2020L-2020C-2020-CT_Powerhead.svg',
-    'PCG400-PCG450-PCG500ML-PCG600-PCG700ML-PCG700FN-GCG350L-GCG350ML-H2000C-1020L-2020L-2020C-2020-CT_Rail.svg',
-];
+    <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑ Top</button>
 
-const PARTS_SECTION_CATEGORIES = [
-    'Wall Mount',
-    'NGX Screwdrive',
-    'NGX Screwdrive',
-    'NGX Chain/Belt',
-    'ELO',
-    'OPP',
-    'OPP',
-    'OPP',
-    'OPP',
-    'NGX Chain/Belt',
-    'ELO',
-    'ELO',
-    'ELO',
-    'ELO',
-    'ELO',
-    'ELO',
-    'ELO',
-    'ELO',
-    'ELO',
-    'ELO',
-    'NGX Chain/Belt',
-    'OPP',
-    'OPP',
-    'NGX Screwdrive',
-    'NGX Screwdrive',
-    'Rhine',
-    'Rhine',
-    'DC Screwdrive',
-    'DC Screwdrive',
-    'AC Screwdrive',
-    'AC Screwdrive',
-    'PMX',
-    'PMX',
-    'PMX',
-    'PMX',
-    'PMX',
-    'Chainglide',
-    'Chainglide',
-];
+    <div id="diag-overlay">
+        <div id="diag-box">
+            <button id="diag-close" aria-label="Close">✕</button>
+            <div id="diag-title"></div>
+            <img id="diag-img" src="" alt="Parts diagram" />
+        </div>
+    </div>
 
-function initParts() {
-    const page = document.querySelector('.parts-page');
-    if (!page) return;
-    const tableWrap = document.getElementById('parts-table-wrap');
-    const tocEl = document.getElementById('parts-toc');
-    const searchEl = document.getElementById('parts-search');
-    if (!tableWrap || !tocEl || !searchEl) return;
 
-    // Clear TOC except the h1
-    while (tocEl.children.length > 1) tocEl.removeChild(tocEl.lastChild);
+    <script>
+        const DIAG_FILES = [
+            '6072-6172-6070-6170_Powerhead.svg',
+            '4063-4063B-4064H-4064H-B-4164H-4164H-B_Powerhead.svg',
+            '4063-4063B-4064H-4064H-B-4164H-4164H-B_Rail.svg',
+            '3022-3024H-3024H-B-3042-3124H-3124H-B-3142-4022-4042-4124H-4124H-B-4142_Powerhead.svg',
+            'G3120HL-G3120HL-B_Powerhead.svg',
+            '1028-1028H-2028-2028H_Powerhead.svg',
+            '1028B-2028B-2028HB_Powerhead.svg',
+            '1128-2128-2128H_Powerhead.svg',
+            '1128B-2128B-2128HB_Powerhead.svg',
+            '3024H-3124H-4124H-3120H-1028-1128-2028-2128-3022-3042-3142-4022-4042-4142_Rail.svg',
+            '1035-1055_Powerhead.svg',
+            '1055B_Powerhead.svg',
+            '1135-1155_Powerhead.svg',
+            '1155B_Powerhead.svg',
+            '2035-2055-3035-3055-3055D_Powerhead.svg',
+            '2033-3053-3155-3155L-3155D-3155LD_Powerhead.svg',
+            '7035-7055-7055D-7055L_Powerhead.svg',
+            '7053L-7135-7155-7155L-7155D_Powerhead.svg',
+            'E7155L-D7155L_Powerhead.svg',
+            '1035-1055-B-2033-2035-2055-3035-3053-3055-D-3155-7035-7053L-7055-D-7135-7155-L-D_Rail.svg',
+            '3024-4024-4024H-4024H-B_Powerhead.svg',
+            '3020H-3020H-B_Powerhead.svg',
+            '3120H-3120H-B-3120HL-3120HL-B_Powerhead.svg',
+            '3062-3064-3064H-4064_Powerhead.svg',
+            '2562-2564-2564H-2568-2568H_Powerhead.svg',
+            '1022-1024-1042-2022-2022-700-2024-2027-2042_Powerhead.svg',
+            '1022-1024-1042-2022-2022-700-2024-2027-2042_Rail.svg',
+            'Pro99-CMD990-H8000-ISD990-ISD995-ISD1000-4560_Powerhead.svg',
+            'Pro99-CMD990-H8000-ISD990-ISD995-ISD1000-4560_Rail.svg',
+            'CM7600-CM8600-Pro95-1060-2560-3560-2060L-3060L-H4000-H6000-IS-ISL-IMS_Powerhead.svg',
+            'CM7600-CM8600-Pro95-1060-2560-3560-2060L-3060L-H4000-H6000-IS-ISL-IMS_Rail.svg',
+            'PMX700-PMX1200-GPS700-IC-GPS1200-IC_Powerhead.svg',
+            'PMX700-PMX1200-GPS700-IC-GPS1200-IC-PMX300-IC-B-PMX500-IC-B-PMX300-IC-A-PMX500-IC-A_Rail.svg',
+            'PMX300-IC-A-PMX500-IC-A-PMX300-IC-B-PMX500-IC-B-IC250-1C250-B_Powerhead.svg',
+            'PMX300-IC-A-PMX500-IC-A-PMX300-IC-B-PMX500-IC-B-GPS700-GPS1200-GPS700-IC-GPS1200-IC_Rail-T-STYLE.svg',
+            'IC250-IC250-B_Rail-T-STYLE.svg',
+            'PCG400-PCG450-PCG500ML-PCG600-PCG700ML-PCG700FN-GCG350L-GCG350ML-H2000C-1020L-2020L-2020C-2020-CT_Powerhead.svg',
+            'PCG400-PCG450-PCG500ML-PCG600-PCG700ML-PCG700FN-GCG350L-GCG350ML-H2000C-1020L-2020L-2020C-2020-CT_Rail.svg',
+        ];
 
-    const sections = [];
+        const sections = [];
+        const STORAGE_KEY = 'fin-sections';
 
-    page.querySelectorAll('td.section-header').forEach((td, i) => {
-        td.querySelectorAll('.parts-toggle').forEach(s => s.remove());
-        const span = document.createElement('span');
-        span.className = 'parts-toggle';
-        td.prepend(span);
+        // ── Build sections ────────────────────────────────────────────
+        document.querySelectorAll('td.section-header').forEach((td, i) => {
+            td.querySelectorAll('.toggle').forEach(s => s.remove());
+            const span = document.createElement('span');
+            span.className = 'toggle';
+            td.prepend(span);
 
-        const headerTr = td.closest('tr');
-        headerTr.id = 'parts-section-' + i;
+            const headerTr = td.closest('tr');
+            headerTr.id = 'section-' + i;
 
-        const dataRows = [];
-        let row = headerTr.nextElementSibling;
-        while (row && !row.querySelector('td.section-header') && !row.classList.contains('cat-header-row')) {
-            dataRows.push(row);
-            row = row.nextElementSibling;
-        }
-
-        dataRows.forEach((r, j) => r.classList.toggle('alt', j % 2 === 1));
-
-        td.setAttribute('role', 'button');
-        td.setAttribute('tabindex', '0');
-        td.setAttribute('aria-expanded', 'true');
-
-        const sec = { td, span, headerTr, dataRows, open: true, label: td.textContent.trim(), tocLink: null };
-        sec.setOpen = function(open) {
-            sec.open = open;
-            sec.span.textContent = open ? '\u25BC ' : '\u25B6 ';
-            sec.td.setAttribute('aria-expanded', String(open));
-            sec.dataRows.forEach(r => { r.style.display = open ? '' : 'none'; });
-        };
-        const toggle = () => sec.setOpen(!sec.open);
-        td.addEventListener('click', toggle);
-        td.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-        });
-        sections.push(sec);
-    });
-
-    // Remove old cat-header-rows before adding new ones
-    page.querySelectorAll('tr.cat-header-row').forEach(r => r.remove());
-
-    let lastCat = null;
-    sections.forEach((s, i) => {
-        const cat = PARTS_SECTION_CATEGORIES[i] || 'Other';
-        if (cat !== lastCat) {
-            const catRow = document.createElement('tr');
-            catRow.className = 'cat-header-row';
-            const catTd = document.createElement('td');
-            catTd.colSpan = 4;
-            catTd.textContent = cat;
-            catRow.appendChild(catTd);
-            s.headerTr.parentNode.insertBefore(catRow, s.headerTr);
-            lastCat = cat;
-        }
-    });
-
-    const seenCats = [];
-    const byCat = {};
-    sections.forEach((s, i) => {
-        const cat = PARTS_SECTION_CATEGORIES[i] || 'Other';
-        if (!byCat[cat]) { byCat[cat] = []; seenCats.push(cat); }
-        byCat[cat].push({ s, i });
-    });
-
-    seenCats.forEach(cat => {
-        const heading = document.createElement('div');
-        heading.className = 'parts-toc-group';
-        heading.textContent = cat;
-        tocEl.appendChild(heading);
-        byCat[cat].forEach(({ s, i }) => {
-            const a = document.createElement('a');
-            a.href = '#parts-section-' + i;
-            a.title = s.label;
-            const catMatch = s.label.match(/\s*[-\u2014]+\s*(powerhead|rail)(\s*\(([^)]+)\))?\s*$/i);
-            const displayLabel = catMatch
-                ? s.label.slice(0, s.label.length - catMatch[0].length).trim()
-                : s.label.trim();
-            a.appendChild(document.createTextNode(displayLabel));
-            if (catMatch) {
-                const tag = document.createElement('span');
-                tag.className = 'parts-toc-tag';
-                const base = /powerhead/i.test(catMatch[1]) ? 'head' : 'rail';
-                const extra = catMatch[3] ? ': ' + catMatch[3].toLowerCase() : '';
-                tag.textContent = base + extra;
-                a.appendChild(tag);
+            const dataRows = [];
+            let row = headerTr.nextElementSibling;
+            while (row && !row.querySelector('td.section-header')) {
+                dataRows.push(row);
+                row = row.nextElementSibling;
             }
-            const cnt = document.createElement('span');
-            cnt.className = 'parts-toc-count';
-            cnt.textContent = s.dataRows.length;
-            a.appendChild(cnt);
-            s.tocLink = a;
-            tocEl.appendChild(a);
-        });
-    });
 
-    tocEl.querySelectorAll('a').forEach(a => {
-        a.addEventListener('click', e => {
-            e.preventDefault();
-            const target = document.getElementById(a.getAttribute('href').slice(1));
-            if (!target || !tableWrap) return;
-            const top = target.getBoundingClientRect().top - tableWrap.getBoundingClientRect().top + tableWrap.scrollTop - 2;
-            tableWrap.scrollTo({ top, behavior: 'smooth' });
-        });
-    });
+            // Zebra stripe within section
+            dataRows.forEach((r, j) => r.classList.toggle('alt', j % 2 === 1));
 
-    const origHTML = new Map();
-    sections.forEach(s => s.dataRows.forEach(r => {
-        origHTML.set(r, Array.from(r.querySelectorAll('td')).map(c => c.innerHTML));
-    }));
+            const label = td.textContent.trim();
+            const category = /powerhead/i.test(label) ? 'powerhead'
+                           : /rail/i.test(label)      ? 'rail'
+                           : 'other';
 
-    function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+            td.setAttribute('role', 'button');
+            td.setAttribute('tabindex', '0');
+            td.setAttribute('aria-expanded', 'true');
+            if (category !== 'other') headerTr.classList.add('cat-' + category);
 
-    searchEl.addEventListener('input', function() {
-        const q = this.value.trim();
-        const ql = q.toLowerCase();
-        sections.forEach(s => {
-            s.dataRows.forEach(r => {
-                const orig = origHTML.get(r);
-                r.querySelectorAll('td').forEach((c, j) => { c.innerHTML = orig[j]; });
+            const diagBtn = document.createElement('button');
+            diagBtn.className = 'diag-btn';
+            diagBtn.innerHTML = '<svg width="14" height="12" viewBox="0 0 24 20" fill="currentColor" aria-hidden="true"><path d="M9 2L7 5H2a2 2 0 00-2 2v11a2 2 0 002 2h20a2 2 0 002-2V7a2 2 0 00-2-2h-5l-2-3H9zm3 13a4.5 4.5 0 110-9 4.5 4.5 0 010 9z"/></svg>';
+            diagBtn.title = 'View diagram';
+            diagBtn.setAttribute('aria-label', 'View diagram');
+            diagBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                openDiagram('diagrams_svg/' + DIAG_FILES[i], label);
             });
-            if (!q) {
-                s.headerTr.style.display = '';
-                s.dataRows.forEach(r => { r.style.display = s.open ? '' : 'none'; });
-                return;
+            td.appendChild(diagBtn);
+            sections.push({ td, span, headerTr, dataRows, open: true, label, category, tocLink: null });
+
+            sections[i].setOpen = (open, save = true) => {
+                sections[i].open = open;
+                sections[i].span.textContent = open ? '\u25BC ' : '\u25B6 ';
+                sections[i].td.setAttribute('aria-expanded', String(open));
+                sections[i].dataRows.forEach(r => r.style.display = open ? '' : 'none');
+                if (save) saveState();
+            };
+
+            const toggle = () => sections[i].setOpen(!sections[i].open);
+            td.addEventListener('click', toggle);
+            td.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+            });
+        });
+
+        // ── Category mapping (by section index) ───────────────────────
+        const SECTION_CATEGORIES = [
+            'Wall Mount',       // 0:  6072 6172 6070 6170
+            'NGX Screwdrive',   // 1:  4063/4064H/4164H — Powerhead
+            'NGX Screwdrive',   // 2:  4063/4064H/4164H — Rail
+            'NGX Chain/Belt',   // 3:  3022 3024H…4142 — Powerhead
+            'ELO',              // 4:  G3120HL
+            'OPP',              // 5:  1028 1028H 2028 2028H
+            'OPP',              // 6:  1028B 2028B 2028HB
+            'OPP',              // 7:  1128 2128 2128H
+            'OPP',              // 8:  1128B 2128B 2128HB
+            'NGX Chain/Belt',   // 9:  3024H…4142 — Rail
+            'ELO',              // 10: 1035 1055
+            'ELO',              // 11: 1055B
+            'ELO',              // 12: 1135 1155
+            'ELO',              // 13: 1155B
+            'ELO',              // 14: 2035 2055 3035 3055 3055D
+            'ELO',              // 15: 2033 3053 3155…
+            'ELO',              // 16: 7035 7055…
+            'ELO',              // 17: 7053L 7135 7155…
+            'ELO',              // 18: 1035…7155 — Rail
+            'ELO',              // 19: E7155L D7155L
+            'NGX Chain/Belt',   // 20: 3024 4024 4024H 4024H-B
+            'OPP',              // 21: 3020H 3020H-B
+            'OPP',              // 22: 3120H 3120H-B 3120HL
+            'NGX Screwdrive',   // 23: 3062 3064 3064H 4064
+            'NGX Screwdrive',   // 24: 2562 2564 2564H 2568
+            'Rhine',            // 25: 1022 1024…2042 — Powerhead
+            'Rhine',            // 26: 1022 1024…2042 — Rail
+            'DC Screwdrive',    // 27: Pro99 CMD990…4560 — Powerhead
+            'DC Screwdrive',    // 28: Pro99 CMD990…4560 — Rail
+            'AC Screwdrive',    // 29: CM7600 CM8600… — Powerhead
+            'AC Screwdrive',    // 30: CM7600 CM8600… — Rail
+            'PMX',              // 31: PMX700 PMX1200… — Powerhead
+            'PMX',              // 32: PMX700… — Rail
+            'PMX',              // 33: PMX300-IC/A… — Powerhead
+            'PMX',              // 34: PMX300… — Rail (T-STYLE)
+            'PMX',              // 35: IC250 IC250/B — Rail (T-STYLE)
+            'Chainglide',       // 36: PCG400… — Powerhead
+            'Chainglide',       // 37: PCG400… — Rail
+        ];
+
+        // ── Inject category title rows into table ─────────────────────
+        let lastTableCat = null;
+        sections.forEach((s, i) => {
+            const cat = SECTION_CATEGORIES[i] || 'Other';
+            if (cat !== lastTableCat) {
+                const catRow = document.createElement('tr');
+                catRow.className = 'cat-header-row';
+                const catTd = document.createElement('td');
+                catTd.colSpan = 4;
+                catTd.textContent = cat;
+                catRow.appendChild(catTd);
+                s.headerTr.parentNode.insertBefore(catRow, s.headerTr);
+                lastTableCat = cat;
             }
-            const re = new RegExp(escRe(q), 'gi');
-            let hasMatch = false;
-            s.dataRows.forEach(r => {
-                const match = r.textContent.toLowerCase().includes(ql);
-                r.style.display = match ? '' : 'none';
-                if (match) {
-                    hasMatch = true;
-                    r.querySelectorAll('td').forEach(c => {
-                        c.innerHTML = c.innerHTML.replace(re, '<mark>$&</mark>');
-                    });
+        });
+
+        // ── Build TOC grouped by category ────────────────────────────
+        const toc = document.getElementById('toc');
+        const seenCats = [];
+        const byCat = {};
+        sections.forEach((s, i) => {
+            const cat = SECTION_CATEGORIES[i] || 'Other';
+            if (!byCat[cat]) { byCat[cat] = []; seenCats.push(cat); }
+            byCat[cat].push({ s, i });
+        });
+
+        seenCats.forEach(cat => {
+            const heading = document.createElement('div');
+            heading.className = 'toc-group-label';
+            heading.textContent = cat;
+            toc.appendChild(heading);
+            byCat[cat].forEach(({ s, i }) => {
+                const a = document.createElement('a');
+                a.href = '#section-' + i;
+                a.title = s.label;
+                const catMatch = s.label.match(/\s*[—\-]+\s*(powerhead|rail)(\s*\(([^)]+)\))?\s*$/i);
+                const displayLabel = catMatch ? s.label.slice(0, s.label.length - catMatch[0].length).trim() : s.label.trim();
+                a.appendChild(document.createTextNode(displayLabel));
+                if (catMatch) {
+                    const tag = document.createElement('span');
+                    tag.className = 'toc-cat-tag';
+                    const base = /powerhead/i.test(catMatch[1]) ? 'head' : 'rail';
+                    const extra = catMatch[3] ? ': ' + catMatch[3].toLowerCase() : '';
+                    tag.textContent = base + extra;
+                    a.appendChild(tag);
                 }
+                const cnt = document.createElement('span');
+                cnt.className = 'toc-count';
+                cnt.textContent = s.dataRows.length;
+                a.appendChild(cnt);
+                s.tocLink = a;
+                toc.appendChild(a);
             });
-            s.headerTr.style.display = hasMatch ? '' : 'none';
         });
-    });
 
-    sections.forEach(s => s.dataRows.forEach(r => {
-        const firstTd = r.querySelector('td:first-child');
-        if (!firstTd) return;
-        const pn = firstTd.childNodes[0] ? firstTd.childNodes[0].textContent.trim() : '';
-        if (!pn) return;
-        const btn = document.createElement('button');
-        btn.className = 'parts-copy-btn';
-        btn.title = 'Copy part number';
-        btn.textContent = '\u2398';
-        btn.addEventListener('click', e => {
+        // ── Sticky offset ─────────────────────────────────────────────
+        const controlsH = document.getElementById('controls').offsetHeight;
+        const theadH    = document.querySelector('thead').offsetHeight;
+        const stickyOffset = controlsH + theadH;
+        document.documentElement.style.setProperty('--controls-height', controlsH + 'px');
+
+        // ── TOC clicks ────────────────────────────────────────────────
+        toc.querySelectorAll('a').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                const target = document.getElementById(a.getAttribute('href').slice(1));
+                window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - stickyOffset, behavior: 'smooth' });
+                toc.classList.remove('open');
+            });
+        });
+
+        // ── State persistence ─────────────────────────────────────────
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(sections.map(s => s.open)));
+        }
+
+        function loadState() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+                if (Array.isArray(saved) && saved.length === sections.length) {
+                    sections.forEach((s, i) => s.setOpen(saved[i], false));
+                    saveState();
+                    return;
+                }
+            } catch(e) {}
+            sections.forEach(s => s.setOpen(true, false));
+            saveState();
+        }
+
+        loadState();
+
+        // ── Diagram modal ─────────────────────────────────────────────
+        const diagOverlay = document.getElementById('diag-overlay');
+        const diagImg     = document.getElementById('diag-img');
+        const diagTitle   = document.getElementById('diag-title');
+
+        function openDiagram(src, title) {
+            diagImg.src = src;
+            diagTitle.textContent = title;
+            diagOverlay.classList.add('open');
+        }
+        function closeDiagram() {
+            diagOverlay.classList.remove('open');
+            setTimeout(() => { diagImg.src = ''; }, 200);
+        }
+        document.getElementById('diag-close').addEventListener('click', closeDiagram);
+        diagOverlay.addEventListener('click', e => { if (e.target === diagOverlay) closeDiagram(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDiagram(); });
+
+
+        // ── Copy buttons ──────────────────────────────────────────────
+        const rowPartNums = new Map();
+        sections.forEach(s => s.dataRows.forEach(r => {
+            const td = r.querySelector('td:first-child');
+            if (!td) return;
+            const partNum = td.textContent.trim();
+            if (!partNum) return;
+            rowPartNums.set(r, partNum);
+            td.insertAdjacentHTML('beforeend', '<button class="copy-btn" title="Copy part number" aria-label="Copy part number">⎘</button>');
+        }));
+
+        document.querySelector('table').addEventListener('click', e => {
+            const btn = e.target.closest('.copy-btn');
+            if (!btn) return;
             e.stopPropagation();
-            navigator.clipboard.writeText(pn).then(() => {
-                btn.textContent = '\u2713';
-                btn.style.color = 'var(--accent)';
-                setTimeout(() => { btn.textContent = '\u2398'; btn.style.color = ''; }, 1400);
+            const partNum = rowPartNums.get(btn.closest('tr'));
+            if (!partNum) return;
+            navigator.clipboard.writeText(partNum).then(() => {
+                btn.textContent = '✓';
+                btn.style.color = 'green';
+                setTimeout(() => { btn.textContent = '⎘'; btn.style.color = ''; }, 1500);
             });
         });
-        firstTd.appendChild(btn);
-    }));
 
-    sections.forEach(s => s.setOpen(true));
+        // ── Search with highlight ─────────────────────────────────────
+        const origHTML = new Map();
+        sections.forEach(s => s.dataRows.forEach(r => {
+            origHTML.set(r, Array.from(r.querySelectorAll('td')).map(c => c.innerHTML));
+        }));
 
-    const spy = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (!entry.isIntersecting) return;
-            const s = sections.find(sec => sec.headerTr === entry.target);
-            if (!s || !s.tocLink) return;
-            tocEl.querySelectorAll('a.active').forEach(a => a.classList.remove('active'));
-            s.tocLink.classList.add('active');
-            const linkTop = s.tocLink.offsetTop - tocEl.offsetTop;
-            const linkBottom = linkTop + s.tocLink.offsetHeight;
-            if (linkTop < tocEl.scrollTop) {
-                tocEl.scrollTop = linkTop - 4;
-            } else if (linkBottom > tocEl.scrollTop + tocEl.clientHeight) {
-                tocEl.scrollTop = linkBottom - tocEl.clientHeight + 4;
+        function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+        document.getElementById('search').addEventListener('input', function () {
+            const q = this.value.trim();
+            const ql = q.toLowerCase();
+
+            sections.forEach(s => {
+                s.dataRows.forEach(r => {
+                    const orig = origHTML.get(r);
+                    r.querySelectorAll('td').forEach((c, j) => c.innerHTML = orig[j]);
+                });
+
+                if (!q) {
+                    s.headerTr.style.display = '';
+                    s.dataRows.forEach(r => r.style.display = s.open ? '' : 'none');
+                    return;
+                }
+
+                const re = new RegExp(escapeRegex(q), 'gi');
+                let hasMatch = false;
+                s.dataRows.forEach(r => {
+                    const match = r.textContent.toLowerCase().includes(ql);
+                    r.style.display = match ? '' : 'none';
+                    if (match) {
+                        hasMatch = true;
+                        r.querySelectorAll('td').forEach(c => {
+                            c.innerHTML = c.innerHTML.replace(re, '<mark>$&</mark>');
+                        });
+                    }
+                });
+                s.headerTr.style.display = hasMatch ? '' : 'none';
+            });
+        });
+
+        // ── Expand / Collapse all ─────────────────────────────────────
+        function expandAll()  { sections.forEach(s => s.setOpen(true));  }
+        function collapseAll(){ sections.forEach(s => s.setOpen(false)); }
+
+
+        // ── Mobile TOC toggle ─────────────────────────────────────────
+        document.getElementById('toc-toggle').addEventListener('click', () => {
+            toc.classList.toggle('open');
+        });
+
+        // ── Back to top ───────────────────────────────────────────────
+        window.addEventListener('scroll', () => {
+            document.getElementById('back-to-top').style.display = window.scrollY > 300 ? 'block' : 'none';
+        }, { passive: true });
+
+        // ── Keyboard shortcuts ────────────────────────────────────────
+        document.addEventListener('keydown', e => {
+            const search = document.getElementById('search');
+            if (e.key === '/' && document.activeElement !== search) {
+                e.preventDefault();
+                search.focus();
+                search.select();
+            } else if (e.key === 'Escape' && document.activeElement === search) {
+                search.blur();
             }
         });
-    }, { root: tableWrap, rootMargin: '-2px 0px -80% 0px', threshold: 0 });
-    sections.forEach(s => spy.observe(s.headerTr));
 
-    const diagOverlay = document.getElementById('parts-diag-overlay');
-    if (diagOverlay) {
-        const closeBtn = document.getElementById('parts-diag-close');
-        if (closeBtn) closeBtn.addEventListener('click', partsCloseDiagram);
-        diagOverlay.addEventListener('click', e => { if (e.target === diagOverlay) partsCloseDiagram(); });
-    }
+        // ── Scroll spy ────────────────────────────────────────────────
+        const spy = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                const s = sections.find(s => s.headerTr === entry.target);
+                if (!s || !s.tocLink) return;
+                toc.querySelectorAll('a.active').forEach(a => a.classList.remove('active'));
+                s.tocLink.classList.add('active');
+                s.tocLink.scrollIntoView({ block: 'nearest' });
+            });
+        }, { rootMargin: `-${stickyOffset}px 0px -70% 0px`, threshold: 0 });
 
-    window._partsSearchEl = searchEl;
-}
+        sections.forEach(s => spy.observe(s.headerTr));
+    </script>
+</body>
 
-function partsExpandAll() {
-    if (!document.querySelector('.parts-page')) return;
-    document.querySelectorAll('.parts-page td.section-header').forEach(td => {
-        const tr = td.closest('tr');
-        let r = tr.nextElementSibling;
-        while (r && !r.querySelector('td.section-header') && !r.classList.contains('cat-header-row')) {
-            r.style.display = '';
-            r = r.nextElementSibling;
-        }
-        const span = td.querySelector('.parts-toggle');
-        if (span) span.textContent = '\u25BC ';
-        td.setAttribute('aria-expanded', 'true');
-    });
-}
-
-function partsCollapseAll() {
-    if (!document.querySelector('.parts-page')) return;
-    document.querySelectorAll('.parts-page td.section-header').forEach(td => {
-        const tr = td.closest('tr');
-        let r = tr.nextElementSibling;
-        while (r && !r.querySelector('td.section-header') && !r.classList.contains('cat-header-row')) {
-            r.style.display = 'none';
-            r = r.nextElementSibling;
-        }
-        const span = td.querySelector('.parts-toggle');
-        if (span) span.textContent = '\u25B6 ';
-        td.setAttribute('aria-expanded', 'false');
-    });
-}
-
-function partsOpenDiagram(src, title) {
-    const overlay = document.getElementById('parts-diag-overlay');
-    const img = document.getElementById('parts-diag-img');
-    const titleEl = document.getElementById('parts-diag-title');
-    if (!overlay) return;
-    img.src = src;
-    titleEl.textContent = title;
-    overlay.classList.add('open');
-}
-
-function partsCloseDiagram() {
-    const overlay = document.getElementById('parts-diag-overlay');
-    if (!overlay) return;
-    overlay.classList.remove('open');
-    setTimeout(() => {
-        const img = document.getElementById('parts-diag-img');
-        if (img) img.src = '';
-    }, 200);
-}
-
-document.addEventListener('keydown', e => {
-    const el = window._partsSearchEl;
-    if (!el || !document.querySelector('.parts-page')) return;
-    if (e.key === '/' && document.activeElement !== el) {
-        e.preventDefault();
-        el.focus();
-        el.select();
-    } else if (e.key === 'Escape' && document.activeElement === el) {
-        el.blur();
-    }
-});
+</html>

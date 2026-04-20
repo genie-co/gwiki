@@ -11,7 +11,7 @@ function createWindow() {
     icon: path.join(__dirname, 'book.ico'),
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#321622',
+      color: '#000',
       symbolColor: '#A25176',
       height: 25,
     },

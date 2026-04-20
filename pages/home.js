@@ -30,7 +30,7 @@ function initHome() {
 
 PAGES.home = {
   title: "Home",
-  section: "home",
-  tags: ["info"],
-  body: /*html*/ ``,
+  type: 'hub',
+  description: "Quick access to frequently used resources",
+  ids: ['contacts', 'dealers', 'parts', 'catalog', 'specs', 'compatibility'],
 };
