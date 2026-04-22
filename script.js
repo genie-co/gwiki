@@ -1,12 +1,75 @@
+        function renderCategory(cat) {
+            const tocItems = cat.topics.map(t => `<li><a href="#${t.id}">${t.title}</a></li>`).join('');
+            const subtitle = cat.subtitle ? `<p class="guide-cat-subtitle">${cat.subtitle}</p>` : '';
+            const intro = cat.intro ? `<div class="guide-intro">${cat.intro}</div>` : '';
+            const topics = cat.topics.map(t => t.type === 'steps' ? renderStepsTopic(t) : renderReferenceTopic(t)).join('');
+            return `
+                <div class="page-layout">
+                    <div class="contents">
+                        <h1>Contents</h1>
+                        <ul>${tocItems}</ul>
+                    </div>
+                    <div class="body">${subtitle}${intro}${topics}</div>
+                </div>
+            `;
+        }
+
+        function renderStepsTopic(topic) {
+            const intro = topic.intro ? `<div class="guide-intro">${topic.intro}</div>` : '';
+            const steps = topic.steps.map(step => {
+                const substeps = step.substeps?.length
+                    ? `<ol class="guide-substeps" type="a">${step.substeps.map(s => `<li>${s}</li>`).join('')}</ol>`
+                    : '';
+                return `<li class="guide-step">
+                    <label class="guide-step-label">
+                        <input type="checkbox" class="guide-step-check">
+                        <span class="guide-step-text">${step.text}</span>
+                    </label>
+                    ${substeps}
+                </li>`;
+            }).join('');
+            const note = topic.note ? `<div class="guide-note">${topic.note}</div>` : '';
+            return `
+                <h3 id="${topic.id}">${topic.title}</h3>
+                ${intro}
+                <ol class="guide-steps">${steps}</ol>
+                <button class="guide-reset-btn" onclick="resetGuideSteps(this)">&#x21BA; Reset steps</button>
+                ${note}
+            `;
+        }
+
+        function renderReferenceTopic(topic) {
+            const body = topic.body ? `<div class="guide-ref-body">${topic.body}</div>` : '';
+            const bullets = topic.bullets?.length
+                ? `<ul class="guide-ref-bullets">${topic.bullets.map(b => `<li>${b}</li>`).join('')}</ul>`
+                : '';
+            return `
+                <h3 id="${topic.id}">${topic.title}</h3>
+                ${body}${bullets}
+            `;
+        }
+
+        function resetGuideSteps(btn) {
+            const ol = btn.previousElementSibling.tagName === 'OL'
+                ? btn.previousElementSibling
+                : btn.parentElement.querySelector('.guide-steps');
+            if (!ol) return;
+            ol.querySelectorAll('.guide-step-check').forEach(cb => {
+                cb.checked = false;
+                cb.closest('.guide-step').classList.remove('done');
+            });
+            btn.classList.remove('visible');
+        }
+
         function renderHub(id, page) {
             const main = document.getElementById('main-content');
             const cards = page.ids.map(cid => {
                 const cp = PAGES[cid];
                 if (!cp) return '';
-                const desc = cp.desc ? `<hr class="hub-card-divider"><div class="hub-card-desc">${cp.desc}</div>` : '';
+                const descHtml = cp.desc ? `<div class="hub-card-desc">${cp.desc}</div>` : '';
                 return `<div class="hub-card" onclick="navigate('${cid}')">
                     <div class="hub-card-title">${cp.title}</div>
-                    ${desc}
+                    <div class="hub-card-bottom">${descHtml}</div>
                 </div>`;
             }).join('');
 
@@ -32,6 +95,21 @@
             history.replaceState(null, '', `#${id}`);
             const hubScroller = main.querySelector('.article-body');
             if (hubScroller) hubScroller.scrollTop = 0;
+
+            requestAnimationFrame(() => {
+                const grid = main.querySelector('.hub-grid');
+                if (!grid) return;
+                const cards = [...grid.querySelectorAll('.hub-card')];
+                const cols = 3;
+                for (let i = 0; i < cards.length; i += cols) {
+                    const row = cards.slice(i, i + cols);
+                    const maxTitleH = Math.max(...row.map(c => c.querySelector('.hub-card-title')?.offsetHeight ?? 0));
+                    row.forEach(c => {
+                        const t = c.querySelector('.hub-card-title');
+                        if (t) t.style.minHeight = maxTitleH + 'px';
+                    });
+                }
+            });
         }
 
         function navigate(id) {
@@ -129,6 +207,16 @@
             });
             return count;
         }
+
+        document.getElementById('main-content').addEventListener('change', function (e) {
+            if (!e.target.matches('.guide-step-check')) return;
+            e.target.closest('.guide-step').classList.toggle('done', e.target.checked);
+            const ol = e.target.closest('.guide-steps');
+            const btn = ol?.nextElementSibling;
+            if (btn?.classList.contains('guide-reset-btn')) {
+                btn.classList.toggle('visible', ol.querySelectorAll(':checked').length > 0);
+            }
+        });
 
         document.getElementById('main-content').addEventListener('click', function (e) {
             const anchor = e.target.closest('a[href^="#"]');

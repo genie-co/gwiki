@@ -24,7 +24,7 @@
     <div style="position:fixed;top:0;left:0;right:0;height:25px;background:var(--bg);-webkit-app-region:drag;z-index:9999;"></div>
 
     <header>
-        <a class="logo" href="#" onclick="navigate('home')">gWiki<img src="logo.png" style="height:1.6em; vertical-align:middle; margin-left:0.3em;"></a>
+        <a class="logo" href="#" onclick="navigate('home')">gWiki<img src="assets/logo.png" style="height:1.6em; vertical-align:middle; margin-left:0.3em;"></a>
         <div class="search-wrap" style="position:relative;">
             <input type="search" id="search" placeholder="Search pages…" autocomplete="off" />
             <div id="search-results"></div>
@@ -66,11 +66,17 @@
                     </div>
             </div>
             <div class="nav-group">
-                <button class="nav-group-btn" onclick="navigate('troubleshootingHub')">Troubleshooting</button>
+                <button class="nav-group-btn" onclick="navigate('guidesHub')">Guides</button>
                     <div class="nav-dropdown">
-                        <a class="nav-link" onclick="navigate('guides')">Guides</a>
+                        <a class="nav-link" onclick="navigate('guideSafetySensors')">Safety Sensors</a>
+                        <a class="nav-link" onclick="navigate('guideTravelIssues')">Travel</a>
+                        <a class="nav-link" onclick="navigate('guideMotorIssues')">Motor</a>
+                        <a class="nav-link" onclick="navigate('guideProgramming')">Electronics</a>
+                        <a class="nav-link" onclick="navigate('guideRails')">Rails</a>
+                        <a class="nav-link" onclick="navigate('guideOlderScrewdrive')">GS Series</a>
+                        <a class="nav-link" onclick="navigate('guidePromax')">PMX/Legacy</a>
                         <a class="nav-link" onclick="navigate('statusLights')">Status Lights</a>
-                        <a class="nav-link" onclick="navigate('wifiIssues')">WiFi Issues</a>
+                        <a class="nav-link" onclick="navigate('wifiIssues')">WiFi</a>
                     </div>
             </div>
             <div class="nav-group">
@@ -80,6 +86,18 @@
                         <a class="nav-link" onclick="navigate('returnsRMA')">Returns / RMA</a>
                         <a class="nav-link" onclick="navigate('sops')">Internal SOPs</a>
                         <a class="nav-link" onclick="navigate('noteTaking')">Note Taking</a>
+                    </div>
+            </div>
+            <div class="nav-group">
+                <button class="nav-group-btn" onclick="navigate('trainingHub')">Training</button>
+                    <div class="nav-dropdown">
+                        <a class="nav-link" onclick="navigate('acDCScrew')">AC/DC Screw</a>
+                        <a class="nav-link" onclick="navigate('ngx')">NGX</a>
+                        <a class="nav-link" onclick="navigate('accessories')">Accessories</a>
+                        <a class="nav-link" onclick="navigate('eloOpp')">ELO/OPP</a>
+                        <a class="nav-link" onclick="navigate('chainGlide')">ChainGlide</a>
+                        <a class="nav-link" onclick="navigate('pmxLegacy')">PMX/Legacy</a>
+                        <a class="nav-link" onclick="navigate('rhine')">Rhine</a>
                     </div>
             </div>
     </div>
@@ -92,37 +110,59 @@
     <footer></footer>
 
     <script src="pages/config.js"></script>
-    <script src="pages/infoHub.js"></script>
-    <script src="pages/accessoriesHub.js"></script>
-    <script src="pages/productsHub.js"></script>
-    <script src="pages/troubleshootingHub.js"></script>
-    <script src="pages/processesHub.js"></script>
-    <script src="pages/aladdinApp.js"></script>
-    <script src="pages/announcements.js"></script>
-    <script src="pages/catalog.js"></script>
-    <script src="pages/compatibility.js"></script>
-    <script src="pages/contacts.js"></script>
-    <script src="pages/dealers-data.js"></script>
-    <script src="pages/dealers.js"></script>
-    <script src="pages/emailTemplates.js"></script>
-    <script src="pages/FAQ.js"></script>
-    <script src="pages/glossary.js"></script>
-    <script src="pages/guides.js"></script>
     <script src="pages/home.js"></script>
-    <script src="pages/homeLink.js"></script>
-    <script src="pages/keypads.js"></script>
-    <script src="pages/manuals.js"></script>
-    <script src="pages/noteTaking.js"></script>
-    <script src="pages/remotes.js"></script>
-    <script src="pages/parts.js"></script>
-    <script src="pages/returnsRMA.js"></script>
-    <script src="pages/sops.js"></script>
-    <script src="pages/specs.js"></script>
-    <script src="pages/statusLights.js"></script>
-    <script src="pages/STB.js"></script>
-    <script src="pages/warrantyClaims.js"></script>
-    <script src="pages/wifiIssues.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js"></script>    
+
+    <script src="pages/reference/refHub.js"></script>
+    <script src="pages/reference/announcements.js"></script>
+    <script src="pages/reference/contacts.js"></script>
+    <script src="pages/reference/dealers-data.js"></script>
+    <script src="pages/reference/dealers.js"></script>
+    <script src="pages/reference/emailTemplates.js"></script>
+    <script src="pages/reference/FAQ.js"></script>
+    <script src="pages/reference/glossary.js"></script>
+
+    <script src="pages/accessories/accessoriesHub.js"></script>
+    <script src="pages/accessories/accessories.js"></script>
+    <script src="pages/accessories/aladdinApp.js"></script>
+    <script src="pages/accessories/compatibility.js"></script>
+    <script src="pages/accessories/homeLink.js"></script>
+    <script src="pages/accessories/keypads.js"></script>
+    <script src="pages/accessories/remotes.js"></script>
+    <script src="pages/accessories/STB.js"></script>
+
+    <script src="pages/products/productsHub.js"></script>
+    <script src="pages/products/catalog.js"></script>
+    <script src="pages/products/manuals.js"></script>
+    <script src="pages/products/parts.js"></script>
+    <script src="pages/products/specs.js"></script>
+
+    <script src="pages/processes/processesHub.js"></script>
+    <script src="pages/processes/noteTaking.js"></script>
+    <script src="pages/processes/returnsRMA.js"></script>
+    <script src="pages/processes/sops.js"></script>
+    <script src="pages/processes/warrantyClaims.js"></script>
+
+    <script src="pages/training/trainingHub.js"></script>
+    <script src="pages/training/acDCScrew.js"></script>
+    <script src="pages/training/ngx.js"></script>
+    <script src="pages/training/eloOpp.js"></script>
+    <script src="pages/training/chainGlide.js"></script>
+    <script src="pages/training/pmxLegacy.js"></script>
+    <script src="pages/training/rhine.js"></script>
+
+    <script src="pages/guides/guidesHub.js"></script>
+    <script src="pages/guides/guides-safety-sensors.js"></script>
+    <script src="pages/guides/guides-travel-issues.js"></script>
+    <script src="pages/guides/guides-motor-issues.js"></script>
+    <script src="pages/guides/guides-programming.js"></script>
+    <script src="pages/guides/guides-rails.js"></script>
+    <script src="pages/guides/guides-older-screwdrive.js"></script>
+    <script src="pages/guides/guides-promax.js"></script>
+    <script src="pages/guides/statusLights.js"></script>
+    <script src="pages/guides/wifiIssues.js"></script>
+
+ 
 </body>
 
 </html>
