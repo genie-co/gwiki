@@ -96,20 +96,7 @@
             const hubScroller = main.querySelector('.article-body');
             if (hubScroller) hubScroller.scrollTop = 0;
 
-            requestAnimationFrame(() => {
-                const grid = main.querySelector('.hub-grid');
-                if (!grid) return;
-                const cards = [...grid.querySelectorAll('.hub-card')];
-                const cols = 3;
-                for (let i = 0; i < cards.length; i += cols) {
-                    const row = cards.slice(i, i + cols);
-                    const maxTitleH = Math.max(...row.map(c => c.querySelector('.hub-card-title')?.offsetHeight ?? 0));
-                    row.forEach(c => {
-                        const t = c.querySelector('.hub-card-title');
-                        if (t) t.style.minHeight = maxTitleH + 'px';
-                    });
-                }
-            });
+
         }
 
         function navigate(id) {

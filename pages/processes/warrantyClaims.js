@@ -1,6 +1,6 @@
 PAGES.warrantyClaims = {
     title: "Warranty Claims",
-    desc: "Coverage policies, validation requirements, and operating procedures for warranties",
+    desc: "Coverage, validation, and operating procedures for warranties",
     section: "Processes",
     tags: ["orders", "warranty", "claims", "proof of purchase", "policy"],
     body: /*html*/`
