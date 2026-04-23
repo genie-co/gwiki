@@ -24,20 +24,16 @@
     <div style="position:fixed;top:0;left:0;right:0;height:25px;background:var(--bg);-webkit-app-region:drag;z-index:9999;"></div>
 
     <header>
-        <a class="logo" href="#" onclick="navigate('home')">gWiki<img src="assets/logo.png" style="height:1.6em; vertical-align:middle; margin-left:0.3em;"></a>
-        <div class="search-wrap" style="position:relative;">
-            <input type="search" id="search" placeholder="Search pages…" autocomplete="off" />
-            <div id="search-results"></div>
+        <div class="header-left">
+<div class="search-wrap" style="position:relative;">
+                <input type="search" id="search" placeholder="Search…" autocomplete="off" />
+                <div id="search-results"></div>
+            </div>
         </div>
-       
-          <div id="current-week-code"></div>
         <nav class="topnav">
             <div class="nav-group">
-                <button class="nav-group-btn" onclick="navigate('home')">Home</button>
-            </div>
-            <div class="nav-group">
                 <button class="nav-group-btn" onclick="navigate('refHub')">Reference</button>
-                    <div class="nav-dropdown">             
+                    <div class="nav-dropdown">
                         <a class="nav-link" onclick="navigate('glossary')">Glossary</a>
                         <a class="nav-link" onclick="navigate('FAQ')">FAQ</a>
                         <a class="nav-link" onclick="navigate('contacts')">Contact Directory</a>
@@ -47,27 +43,7 @@
                     </div>
             </div>
             <div class="nav-group">
-                <button class="nav-group-btn" onclick="navigate('accessoriesHub')">Accessories</button>
-                    <div class="nav-dropdown">
-                        <a class="nav-link" onclick="navigate('compatibility')">Compatibilty</a>
-                        <a class="nav-link" onclick="navigate('STB')">Safety Sensors</a>
-                        <a class="nav-link" onclick="navigate('remotes')">Remotes</a>
-                        <a class="nav-link" onclick="navigate('keypads')">Keypads</a>
-                        <a class="nav-link" onclick="navigate('homeLink')">HomeLink</a>
-                        <a class="nav-link" onclick="navigate('aladdinApp')">Aladdin</a>
-                    </div>
-            </div>
-            <div class="nav-group">
-                <button class="nav-group-btn" onclick="navigate('productsHub')">Products</button>
-                    <div class="nav-dropdown">
-                        <a class="nav-link" onclick="navigate('catalog')">Catalog</a>
-                        <a class="nav-link" onclick="navigate('specs')">Specs</a>
-                        <a class="nav-link" onclick="navigate('manuals')">Manuals</a>
-                        <a class="nav-link" onclick="navigate('parts')">Parts</a>
-                    </div>
-            </div>
-            <div class="nav-group">
-                <button class="nav-group-btn" onclick="navigate('guidesHub')">Guides</button>
+                <button class="nav-group-btn" onclick="navigate('guidesHub')">Troubleshoot</button>
                     <div class="nav-dropdown">
                         <a class="nav-link" onclick="navigate('guideSafetySensors')">Safety Sensors</a>
                         <a class="nav-link" onclick="navigate('statusLights')">Status Lights</a>
@@ -81,7 +57,31 @@
                     </div>
             </div>
             <div class="nav-group">
-                <button class="nav-group-btn" onclick="navigate('processesHub')">Processes</button>
+                <button class="nav-group-btn" onclick="navigate('productsHub')">Products</button>
+                    <div class="nav-dropdown">
+                        <a class="nav-link" onclick="navigate('catalog')">Catalog</a>
+                        <a class="nav-link" onclick="navigate('specs')">Specs</a>
+                        <a class="nav-link" onclick="navigate('manuals')">Manuals</a>
+                        <a class="nav-link" onclick="navigate('parts')">Parts</a>
+                    </div>
+            </div>
+            <div class="nav-group">
+                <button class="nav-group-btn nav-home-btn" onclick="navigate('home')">home</button>
+            </div>
+            <div class="nav-group">
+                <button class="nav-group-btn" onclick="navigate('accessoriesHub')">Accessories</button>
+                    <div class="nav-dropdown">
+                        <a class="nav-link" onclick="navigate('compatibility')">Compatibilty</a>
+                        <a class="nav-link" onclick="navigate('STB')">Safety Sensors</a>
+                        <a class="nav-link" onclick="navigate('remotes')">Remotes</a>
+                        <a class="nav-link" onclick="navigate('keypads')">Keypads</a>
+                        <a class="nav-link" onclick="navigate('homeLink')">HomeLink</a>
+                        <a class="nav-link" onclick="navigate('aladdinApp')">Aladdin</a>
+                    </div>
+            </div>
+            
+            <div class="nav-group">
+                <button class="nav-group-btn" onclick="navigate('processesHub')">Procedures</button>
                     <div class="nav-dropdown">
                         <a class="nav-link" onclick="navigate('warrantyClaims')">Warranty Claims</a>
                         <a class="nav-link" onclick="navigate('returnsRMA')">Returns / RMA</a>
@@ -101,8 +101,11 @@
                         <a class="nav-link" onclick="navigate('rhine')">Rhine</a>
                     </div>
             </div>
-    </div>
-    </nav>
+        </div>
+        </nav>
+        <div class="header-right">
+            <div id="current-week-code"></div>
+        </div>
     </header>
     <div class="layout">
     <main id="main-content">

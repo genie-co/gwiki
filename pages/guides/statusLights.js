@@ -2,7 +2,6 @@ PAGES.statusLights = {
     title: "Status Lights",
     desc: "Status indicator charts for all models",
     section: "Guides",
-    tags: ["troubleshooting", "programming", "issues", "indicator", "reference"],
     body: /*html*/ `
 <div class="page-layout">
 <div class="contents">
@@ -85,7 +84,7 @@ PAGES.statusLights = {
       <td>Unplug unit, wait 5 seconds, plug in. If issue remains, replace board.</td>
     </tr>
     <tr>
-      <th colspan=3 style="border-top:3px solid var(--border); border-bottom:3px solid var(--border)">Battery Backup</th>
+      <th colspan=3>Battery Backup</th>
     </tr>
     <tr>
       <td class="elo-leds"><span class="sl sl-long sl-green"></span><span class="sl sl-green"></span></td>
@@ -431,7 +430,7 @@ PAGES.statusLights = {
       <td>Unplug unit, wait 5 seconds, plug in. If problem persists, contact technician.</td>
     </tr>
     <tr>
-      <th colspan=3 style="border-top:3px solid var(--border); border-bottom:3px solid var(--border)">Battery Backup</th>
+      <th colspan=3>Battery Backup</th>
     </tr>
     <tr>
       <td class="elo-leds"><span class="sl sl-long sl-green"></span><span class="sl sl-green"></span></td>
