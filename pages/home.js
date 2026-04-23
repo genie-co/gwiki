@@ -32,5 +32,5 @@ PAGES.home = {
   title: "Home",
   type: 'hub',
   description: "Quick access to frequently used resources",
-  ids: ['contacts', 'dealers', 'parts', 'catalog', 'specs', 'compatibility'],
+  ids: ['refHub', 'accessoriesHub', 'productsHub', 'guidesHub', 'processesHub', 'trainingHub'],
 };

@@ -12,7 +12,7 @@ function createWindow() {
     titleBarStyle: 'hidden',
     titleBarOverlay: {
       color: '#000',
-      symbolColor: '#A25176',
+      symbolColor: '#ffffff84',
       height: 25,
     },
     webPreferences: {

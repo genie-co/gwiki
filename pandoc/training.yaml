@@ -1,0 +1,6 @@
+from: docx
+to: html5
+template: pandoc/wiki-template.html
+filters:
+  - pandoc/wiki.lua
+standalone: true

@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AC / DC Screwdrive — gWiki</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #000;
+      --bg-2: #321622;
+      --border: #a25176;
+      --accent: #7e3e5b;
+      --text: #efeeef;
+      --subtext: #fad4e3;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "Google Sans", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .drag-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 25px;
+      background: var(--bg);
+      z-index: 9999;
+    }
+
+    header {
+      position: fixed;
+      top: 25px; left: 0; right: 0;
+      height: 52px;
+      background: var(--bg-2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 1.25rem;
+      gap: 1rem;
+      z-index: 100;
+      overflow: visible;
+    }
+
+    header .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--subtext);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    header .search-wrap {
+      flex: 1;
+      max-width: 420px;
+      position: relative;
+    }
+
+    header input[type="search"] {
+      width: 100%;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      font-family: "Google Sans", sans-serif;
+    }
+
+    #current-week-code {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0.75rem;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .code-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--subtext);
+    }
+
+    .code-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    nav.topnav {
+      display: flex;
+      align-items: stretch;
+      align-self: stretch;
+      margin-left: auto;
+    }
+
+    .nav-group {
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      border-right: 1px solid var(--border);
+    }
+
+    .nav-group:last-child { border-right: none; }
+
+    .nav-group-btn {
+      font-family: "Google Sans", sans-serif;
+      background: none;
+      border: none;
+      color: var(--subtext);
+      font-size: 0.875rem;
+      padding: 0 0.7rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-group-btn:hover,
+    .nav-group:hover .nav-group-btn { background: var(--accent); color: var(--subtext); }
+
+    .nav-group:hover .nav-dropdown { display: block; }
+    .nav-group:last-child .nav-dropdown { left: auto; right: 0; }
+
+    .nav-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%; left: 0;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      min-width: 160px;
+      z-index: 200;
+      padding: 0.35rem 0;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 0.35rem 1rem;
+      font-size: smaller;
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-link:hover { background: var(--bg); }
+
+    .nav-link.active {
+      color: var(--subtext);
+      border-left-color: var(--accent);
+      background: var(--accent);
+      font-weight: 500;
+    }
+
+    .layout {
+      display: flex;
+      height: calc(100vh - 102px);
+      margin-top: 77px;
+      overflow: hidden;
+    }
+
+    main {
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 25px;
+      background: var(--bg-2);
+      border-top: 1px solid var(--border);
+    }
+
+    .breadcrumb {
+      font-size: 0.8rem;
+      color: var(--subtext);
+      margin-bottom: 0.5rem;
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+
+    article h1 {
+      font-size: 1.875rem;
+      margin-bottom: 0.5rem;
+      font-family: "Google Sans", sans-serif;
+    }
+
+    article .meta {
+      font-size: 0.8rem;
+      color: var(--subtext);
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: var(--accent);
+      color: var(--subtext);
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-right: 0.3rem;
+    }
+
+    article {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .article-header {
+      flex-shrink: 0;
+      padding: 1rem 3rem 0;
+    }
+
+    .article-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 3rem 2.5rem;
+      min-height: 0;
+      scroll-behavior: smooth;
+    }
+
+    main:has(.page-layout) .article-body {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 0;
+    }
+
+    main:has(.page-layout) .page-layout {
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    main:has(.page-layout) .contents {
+      overflow-y: auto;
+      align-self: stretch;
+      scroll-behavior: smooth;
+    }
+
+    main:has(.page-layout) .page-layout > *:not(.contents) {
+      flex: 1;
+      overflow-y: auto;
+      min-width: 0;
+      padding-bottom: 2.5rem;
+      scroll-behavior: smooth;
+    }
+
+    article {
+      display: flex;
+      flex-direction: column;
+    }
+
+    article h2 {
+      font-size: 1.25rem;
+      margin: 0.5rem 0 0.4rem;
+      border-bottom: 1px solid var(--border);
+      width: 99%;
+      font-family: "Google Sans", sans-serif;
+    }
+
+    article h3 {
+      font-size: 1.05rem;
+      margin: 0.5rem 0 0.4rem;
+      border-bottom: 1px solid var(--accent);
+      width: 99%;
+      font-family: "Google Sans", sans-serif;
+    }
+
+    article h4 {
+      border-left: 3px solid var(--border);
+      background: var(--bg-2);
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: var(--subtext);
+      font-size: 0.95rem;
+      margin: 0.5rem 0 0.3rem;
+    }
+
+    article p {
+      margin-bottom: 1rem;
+      width: 99%;
+    }
+
+    article ul, article ol {
+      margin: 0.5rem 0 1rem 1.5rem;
+    }
+
+    article li {
+      margin-bottom: 0.25rem;
+    }
+
+    article a {
+      color: var(--subtext);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: var(--subtext);
+    }
+
+    article img {
+      max-width: 100%;
+      height: auto;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+    }
+
+    .page-layout {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .contents {
+      text-align: left;
+      width: 20%;
+      color: var(--subtext);
+    }
+
+    .contents h1 {
+      border-bottom: 1px solid var(--border);
+      font-size: 1rem;
+      margin-left: 8px;
+      font-weight: 500;
+    }
+
+    .contents p {
+      color: var(--subtext);
+    }
+
+    .contents ul, .contents a {
+      font-size: 0.8rem;
+      margin-top: 0;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .contents h2 {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+      width: fit-content;
+    }
+
+    .body {
+      width: 90%;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+  </style>
+</head>
+<body>
+
+  <div class="drag-bar"></div>
+
+  <header>
+    <a class="logo" href="#">gWiki <img src="../assets/logo.png" style="height:1.6em;vertical-align:middle;margin-left:0.3em;"></a>
+    <div class="search-wrap">
+      <input type="search" placeholder="Search pages…" autocomplete="off" />
+    </div>
+    <div id="current-week-code">
+      <span class="code-label">Week</span>
+      <span class="code-value">—</span>
+    </div>
+    <nav class="topnav">
+      <div class="nav-group">
+        <button class="nav-group-btn">Home</button>
+      </div>
+      <div class="nav-group">
+        <button class="nav-group-btn">Reference</button>
+        <div class="nav-dropdown">
+          <a class="nav-link">Glossary</a>
+          <a class="nav-link">FAQ</a>
+          <a class="nav-link">Contact Directory</a>
+          <a class="nav-link">Announcements</a>
+          <a class="nav-link">Dealers</a>
+          <a class="nav-link">Email Templates</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-group-btn">Accessories</button>
+        <div class="nav-dropdown">
+          <a class="nav-link">Compatibility</a>
+          <a class="nav-link">Safety Sensors</a>
+          <a class="nav-link">Remotes</a>
+          <a class="nav-link">Keypads</a>
+          <a class="nav-link">HomeLink</a>
+          <a class="nav-link">Aladdin</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-group-btn">Products</button>
+        <div class="nav-dropdown">
+          <a class="nav-link">Catalog</a>
+          <a class="nav-link">Specs</a>
+          <a class="nav-link">Manuals</a>
+          <a class="nav-link">Parts</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-group-btn">Guides</button>
+        <div class="nav-dropdown">
+          <a class="nav-link">Safety Sensors</a>
+          <a class="nav-link">Status Lights</a>
+          <a class="nav-link">Electronics</a>
+          <a class="nav-link">WiFi</a>
+          <a class="nav-link">Travel</a>
+          <a class="nav-link">Motor</a>
+          <a class="nav-link">Rails</a>
+          <a class="nav-link">GS Series</a>
+          <a class="nav-link">PMX/Legacy</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-group-btn">Processes</button>
+        <div class="nav-dropdown">
+          <a class="nav-link">Warranty Claims</a>
+          <a class="nav-link">Returns / RMA</a>
+          <a class="nav-link">Internal SOPs</a>
+          <a class="nav-link">Note Taking</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-group-btn">Training</button>
+        <div class="nav-dropdown">
+          <a class="nav-link active">AC/DC Screw</a>
+          <a class="nav-link">NGX</a>
+          <a class="nav-link">Accessories</a>
+          <a class="nav-link">ELO/OPP</a>
+          <a class="nav-link">ChainGlide</a>
+          <a class="nav-link">PMX/Legacy</a>
+          <a class="nav-link">Rhine</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <main>
+      <article>
+        <div class="article-header">
+          <div class="breadcrumb">
+            <a style="color:var(--text)">Home</a>
+            <span>›</span>
+            <a style="color:var(--text)">Training</a>
+            <span>›</span>
+            <span>AC / DC Screwdrive</span>
+          </div>
+          <h1>AC / DC Screwdrive</h1>
+          <div class="meta">
+            <span class="tag">training</span>
+            <span class="tag">AC/DC</span>
+            <span class="tag">screw drive</span>
+            <span class="tag">operators</span>
+          </div>
+        </div>
+        <div class="article-body">
+<div class="page-layout">
+  <div class="contents">
+    <h1>Contents</h1>
+    <ul>
+      <li><a href="#legacy-ac">Legacy AC Screwdrive</a>
+        <ul>
+          <li><a href="#ac-internal">Internal Parts</a>
+            <ul>
+              <li><a href="#ac-powerhead">Powerhead</a></li>
+              <li><a href="#ac-motor">Motor</a></li>
+              <li><a href="#ac-sequensor">Sequensor Board</a></li>
+            </ul>
+          </li>
+          <li><a href="#ac-external">External Parts</a>
+            <ul>
+              <li><a href="#ac-rail">Rail</a></li>
+              <li><a href="#ac-carriage">Carriage</a></li>
+              <li><a href="#ac-limits">Limit Switches</a></li>
+              <li><a href="#ac-coupler">Coupler</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li><a href="#dc">DC Screwdrive</a>
+        <ul>
+          <li><a href="#dc-internal">Internal Parts</a>
+            <ul>
+              <li><a href="#dc-motor">DC Motor</a></li>
+              <li><a href="#dc-controller">Controller Board</a></li>
+              <li><a href="#dc-learn">Learn Code Button</a></li>
+              <li><a href="#dc-status">Status Indicator</a></li>
+              <li><a href="#dc-drive-board">Motor Drive Board</a></li>
+              <li><a href="#dc-speed">Speed Option</a></li>
+            </ul>
+          </li>
+          <li><a href="#dc-external">External Parts</a>
+            <ul>
+              <li><a href="#dc-carriage">Carriage</a></li>
+              <li><a href="#dc-powerhead">Powerhead</a></li>
+              <li><a href="#dc-rail">Rail and Screw</a></li>
+              <li><a href="#dc-coupler">Coupler, Clip and Collar</a></li>
+              <li><a href="#dc-release">Release Cord and Tag</a></li>
+              <li><a href="#dc-limits">Limit Switches</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li><a href="#troubleshooting">Troubleshooting</a>
+        <ul>
+          <li><a href="#flash-1">1x flash</a></li>
+          <li><a href="#flash-2">2x flash</a></li>
+          <li><a href="#flash-3">3x flash</a></li>
+          <li><a href="#flash-4">4x flash</a></li>
+          <li><a href="#flash-5">5x flash</a></li>
+          <li><a href="#flash-6">6x flash</a></li>
+        </ul>
+      </li>
+      <li><a href="#elo">ELO / RTP</a></li>
+      <li><a href="#force">Force</a>
+        <ul>
+          <li><a href="#newtons">Newtons vs Horsepower</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+  <div class="body">
+
+    <h2 id="legacy-ac">Legacy AC Screwdrive</h2>
+
+    <h3 id="ac-internal">Internal Parts</h3>
+
+    <h4 id="ac-powerhead">Powerhead</h4>
+    <ul>
+      <li>Main motor box mounted to ceiling, contains all internal parts</li>
+      <li>Houses light bulbs (2 60-watt)</li>
+      <li>Contains 4 screw-type wire terminals for connecting to the wall console and the STBs</li>
+    </ul>
+
+    <h4 id="ac-motor">Motor</h4>
+    <ul>
+      <li>Alternating current motor</li>
+      <li>Louder than DC (direct current) motors</li>
+      <li>Single operation speed</li>
+      <li>Faulty motors can result in <u>loud grinding or whirring noises, slow operation</u></li>
+    </ul>
+
+    <h4 id="ac-sequensor">Sequensor Board</h4>
+    <ul>
+      <li>Main circuit board that controls almost all operation</li>
+      <li>One relay for lights, one for up travel and one for down travel
+        <ul>
+          <li>Stuck relays can result in <u>doors not stopping at limits (head crashing or running into ground) or not moving at all in either direction</u></li>
+          <li>Light relay could also cause <u>no light or constant light</u>, but this is <em>typically a fault in the wall console or wiring to wall console</em></li>
+        </ul>
+      </li>
+    </ul>
+
+    <h3 id="ac-external">External Parts</h3>
+
+    <h4 id="ac-rail">Rail</h4>
+    <ul>
+      <li>Retail rails are cut into 3 segments, pro models are one piece</li>
+      <li>Retail rails can go up to 8' with an ext. kit; ext. kit goes between segments 2 and 3</li>
+      <li>Aluminum extruded C-channel rail with steel screw drive system</li>
+      <li>Rail segments connected via clips and collars
+        <ul>
+          <li>Faulty clips/collars will make it so <u>only one or two segments of screw will turn but not all</u></li>
+        </ul>
+      </li>
+    </ul>
+    <img src="media/image1.png" alt="Clips and collars installation instructions, screwdrive" />
+
+    <h4 id="ac-carriage">Carriage</h4>
+    <ul>
+      <li><img src="media/image2.png" alt="AC Screwdrive carriage and door arm diagram" />Traveler that attaches to the door arm and runs down rail to pull door open and closed</li>
+      <li>Aluminum teeth to protect from weight of door</li>
+      <li>Faulty carriage usually means teeth are corroded or worn; symptom will be <u>motor running, screw turning, but no door movement</u></li>
+      <li>Has release mechanism for disengaging door to allow for manual door use</li>
+    </ul>
+
+    <h4 id="ac-limits">Limit Switches</h4>
+    <ul>
+      <li><img src="media/image3.png" alt="AC Screwdrive limit switch and rail diagram" />Mechanical limit switches, stops door from moving when triggered</li>
+      <li>One positioned at lower limit (brown wire) and one at upper limit (grey wire) on both sides of rail
+        <ul>
+          <li>The 'limit' refers to the highest and lowest points of travel; stops the door at the right position to prevent door from running into ground or into powerhead</li>
+        </ul>
+      </li>
+      <li>Faulty limit switch can cause the door to <u>blow past limits, stop before limits, or not move at all</u></li>
+    </ul>
+
+    <h4 id="ac-coupler">Coupler</h4>
+    <ul>
+      <li>Rubber tube that connects the end of the screw in rail to motor shaft</li>
+      <li>Faulty coupler will make motor run, but the screw will not turn</li>
+    </ul>
+
+    <h2 id="dc">DC Screwdrive</h2>
+
+    <h3 id="dc-internal">Internal Parts</h3>
+
+    <h4 id="dc-motor">DC Motor</h4>
+    <ul>
+      <li>Allows for quiet operation and varying speeds</li>
+    </ul>
+
+    <h4 id="dc-controller">Controller Board</h4>
+    <ul>
+      <li>Controls almost all functions, including up and down movement</li>
+      <li>Contains timer for lights</li>
+      <li>Receiver controls wireless devices
+        <ul>
+          <li>Receives signals from remotes and wireless keypad</li>
+          <li>390 frequencies</li>
+          <li>Stores up to seven devices</li>
+        </ul>
+      </li>
+      <li>Force Knobs
+        <ul>
+          <li>Door weight balance</li>
+          <li>Can adjust sensitivity</li>
+          <li>Controls upper and lower limits</li>
+        </ul>
+      </li>
+      <li>Contains opto luctor</li>
+      <li>Contains status indicator, terminal screws, speed option, and learn code button</li>
+    </ul>
+
+    <h4 id="dc-learn">Learn Code Button</h4>
+    <ul>
+      <li>Used for programming or resetting remote controls and keypad</li>
+      <li>Red LED will light up when pressed</li>
+    </ul>
+
+    <h4 id="dc-status">Status Indicator</h4>
+    <ul>
+      <li>Green LED that will blink 1–8 times, indicating specific issues</li>
+    </ul>
+
+    <h4 id="dc-drive-board">Motor Drive Board</h4>
+    <ul>
+      <li>Powers Controller Board</li>
+      <li>Relays for lights</li>
+      <li>Contains transformer
+        <ul>
+          <li>Converts wall currents (AC) into direct currents</li>
+        </ul>
+      </li>
+      <li>Used until 2006; split wire harness requires adapter</li>
+      <li>A ribbon attaches the Motor Drive Board to the Controller Board</li>
+    </ul>
+
+    <h4 id="dc-speed">Speed Option</h4>
+    <ul>
+      <li>Allows change of the speed in which the door opens and closes by clipping this wire</li>
+      <li>Motor has base speed of 14" per second on up travel and 7" on down travel</li>
+      <li>When opener loses power, speed will readjust</li>
+    </ul>
+
+    <h3 id="dc-external">External Parts</h3>
+
+    <h4 id="dc-carriage">Carriage</h4>
+    <ul>
+      <li>Traveler that runs down rail, connecting to the door arm and pulls door up and down</li>
+      <li>Can be used to manually operate door</li>
+      <li>Contains magnet to trigger limit switches</li>
+    </ul>
+
+    <h4 id="dc-powerhead">Powerhead</h4>
+    <ul>
+      <li>Motor box where motor, circuit boards, and all internal parts are stored</li>
+      <li>Attaches to ceiling and rail via mounting holes on side</li>
+    </ul>
+
+    <h4 id="dc-rail">Rail and Screw</h4>
+    <ul>
+      <li>Screwdrive rail with steel screwdrive system</li>
+      <li>Typically, 7ft–7ft6in
+        <ul>
+          <li>8ft doors require extension kits</li>
+        </ul>
+      </li>
+      <li>Retail model rails come in 3-piece segments; pro models come in one piece</li>
+      <li>Rubber liner in rail to reduce noise</li>
+      <li>Wider rail to fit Limit Switch and STB wires</li>
+    </ul>
+
+    <h4 id="dc-coupler">Coupler, Clip and Collar</h4>
+    <ul>
+      <li>Coupler connects screwdrive in the rail to the powerhead</li>
+      <li>Clip and collar secure screw joints on 3-piece rails</li>
+    </ul>
+
+    <h4 id="dc-release">Release Cord and Tag</h4>
+    <ul>
+      <li>Red or red/white striped cord attached to carriage
+        <ul>
+          <li>Should hang 6ft above ground</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h4 id="dc-limits">Limit Switches</h4>
+    <ul>
+      <li>Mounted on same side of rail, arrows indicate which side
+        <ul>
+          <li>Down Limit wire is brown, Up Limit wire is white</li>
+        </ul>
+      </li>
+      <li>Stops the unit at the upper and lower limits when the door is opening and closing</li>
+      <li>Magnetic limits triggered by the magnet in the carriage</li>
+    </ul>
+
+    <h2 id="troubleshooting">Troubleshooting</h2>
+
+    <h4 id="flash-1">1x flash</h4>
+    <p>If this happens once and unplugging fixes it, that is fine. If it is becoming a reoccurring thing or unplugging doesn't fix it — Motor Drive Board is bad. Verify if the customer is the original owner. If yes, replace unit.</p>
+
+    <h4 id="flash-2">2x flash</h4>
+    <p>If this happens repeatedly or unplugging and plugging back in doesn't fix it — try sending the control board if the customer is the original owner AND is OK with setting this up themselves. When the issue can be either control board or motor drive board (which powers the control board), if the customer wants service, skip to replacing the unit to save on the service call.</p>
+
+    <h4 id="flash-3">3x flash</h4>
+    <p>If waiting 30 minutes doesn't fix it, then there is an issue with the motor or the boards — unit replacement if under warranty. <em>Very rare.</em></p>
+
+    <h4 id="flash-4">4x flash</h4>
+    <p>If door is balanced — increase force by a quarter of a turn (under light cover). If there is no improvement, see if the unit still has the issue without the door weight. Is there any humming from the motor? If there are no accompanying sounds and it does the same thing without door weight, control board.</p>
+    <ul>
+      <li><strong>Motor (discontinued)</strong> — Sounds: Humming / brakes going bad on car / lawn mower / hair clippers</li>
+      <li><strong>Coupler</strong> — Typically both directions or when opening, can happen on down travel only. Sounds: garbage disposal.</li>
+    </ul>
+
+    <h4 id="flash-5">5x flash</h4>
+
+    <h4 id="flash-6">6x flash</h4>
+
+    <h2 id="elo">ELO / RTP</h2>
+    <ul>
+      <li>1035, 1055, 2036: single 60-watt bulb on rear of unit — all other models have two bulbs on sides of unit</li>
+      <li>Model/SN sticker under lens cover
+        <ul>
+          <li>For all but 1035, 1055, 2036 — will be on right side with back to door</li>
+        </ul>
+      </li>
+      <li>½ – 1¼ HPc DC motor</li>
+      <li>Incompatible with external BBU, network adapter, AWC and CC remote</li>
+      <li>Sectional doors only</li>
+      <li>3 types of boards
+        <ul>
+          <li>Standard — 1035, 1055, 2036, 2055, 3055, 2035</li>
+          <li>BBU — 7055, 7035</li>
+          <li>Aladdin/BBU — 3053, 2033, 3155, 7155</li>
+        </ul>
+      </li>
+      <li>Relays on board for up/down and lights</li>
+      <li>4 terminals for STBs (1, 2) and WB (3 B/W, 4 W)</li>
+      <li>315/390 MHz, up to 16 devices</li>
+      <li>Encoder measures RPM — stops (up) and/or reverses (down) when obstruction sensed</li>
+      <li>Short travel in both directions is an indication of encoder fault
+        <ul>
+          <li>More than 6in of travel = wheel</li>
+        </ul>
+      </li>
+      <li>Transformer converts 120V from wall to 24V to feed rest of unit</li>
+      <li>May cause slight constant humming</li>
+      <li>If outlet is fine but unit has no power, fault in transformer</li>
+      <li>Aladdin/BBU board (3053, 2033, 3155, 7155) controls Aladdin app</li>
+      <li>Blue button used for configuring or reconnecting WiFi</li>
+      <li>Gray button used for updating Aladdin board software</li>
+      <li>Does not come with interconnect harness</li>
+      <li>Integrated BBU on 7055, 7035 and 7155</li>
+      <li>Up to 50 cycles on 500 lbs</li>
+      <li>Green flashing: BBU in use — green steady: BBU charged</li>
+      <li>5-piece tube rail, 7ft (ext. kit — end of rail, 8ft), chain/belt, connects at turnbuckle/bullet</li>
+      <li>Connects to powerhead with one metal bracket and sprocket holder</li>
+      <li>Plastic sprocket for belt, metal for chain — exposed on top of head</li>
+      <li>Belt models have belt retainers</li>
+    </ul>
+
+    <h2 id="force">Force</h2>
+
+    <h3 id="newtons">Newtons vs Horsepower</h3>
+    <p>One of the most frequent questions we receive concerns the difference between thrust and horsepower and how to convert between the two. The problem is that these quantities are not directly related, so it is not simple to convert one to the other.</p>
+    <p>The dictionary defines thrust as a <strong>force</strong> or pressure exerted on an object, and it is typically measured in units of pounds (lb.) or newtons (N). <strong>Power</strong>, however, is a measurement of work, which is defined as the amount of motion a force creates when it is exerted on a body over a certain amount of time. Power is typically measured in units of horsepower (hp) or kilowatts (kW). The most common equation used to relate these quantities is as follows.</p>
+    <p><em>P = F &times; d / t &nbsp;&nbsp; where P = power, F = force, d = distance, t = time</em></p>
+    <p>To understand what these definitions mean, consider a simple example. Say you had to move a heavy desk 10 ft. (3 m.) from one side of the room to another. You push on the desk with a force of 90 lb. (400 N), but the desk doesn't budge. In this case, a force has been applied, but since the desk remains in the same place, you didn't perform any work. Now you ask a friend to help you, and he pushes on the desk with the same force as you. Your combined force of 180 lb. (800 N) allows you to move the desk to its new location in half a minute (30 seconds).</p>
+    <p>Based on the above equation, the power you and your friend generated to perform that work was 60 foot-pounds per second, or 80 newton-meters per second.</p>
+    <p>In the Metric system, the unit of a watt (W) is defined as a newton-meter per second, so the power it took to move the desk is 80 W or 0.08 kW. The English system equivalent of a watt is horsepower, and 1 hp is defined as being equal to 550 ft-lb/s. In other words, our 60 ft-lb/s is equivalent to 0.11 hp. In this case and this case only, we can say that a force of 180 lb. converts to 0.11 hp.</p>
+    <p>As we have seen, however, that conversion depends on the variables distance and time. If you and your friend used the same force to move the desk the same distance but it took only 15 seconds, the power would double to 0.22 hp (0.16 kW).</p>
+    <p>We can also think of this equation in two slightly different ways. Some readers may recognize that the force multiplied by distance represents another quantity called torque (T), so we can say power is equivalent to the torque a system generates over time. Others may recognize the term distance over time as the definition of velocity (v), so we can also say that power is equivalent to the force it takes to move an object at a constant speed.</p>
+
+  </div>
+</div>
+        </div>
+      </article>
+    </main>
+  </div>
+
+  <footer></footer>
+
+</body>
+</html>

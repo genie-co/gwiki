@@ -66,7 +66,8 @@
             const cards = page.ids.map(cid => {
                 const cp = PAGES[cid];
                 if (!cp) return '';
-                const descHtml = cp.desc ? `<div class="hub-card-desc">${cp.desc}</div>` : '';
+                const descText = cp.desc || cp.description || '';
+                const descHtml = descText ? `<div class="hub-card-desc">${descText}</div>` : '';
                 return `<div class="hub-card" onclick="navigate('${cid}')">
                     <div class="hub-card-title">${cp.title}</div>
                     <div class="hub-card-bottom">${descHtml}</div>
@@ -265,7 +266,7 @@
             );
 
             if (!hits.length) {
-                resultsBox.innerHTML = `<div class="search-result-item" style="color:var(--muted)">No results for "${q}"</div>`;
+                resultsBox.innerHTML = `<div class="search-result-item" style="color:var(--subtext);opacity:0.7">No results for "${q}"</div>`;
             } else {
                 resultsBox.innerHTML = hits.map(([id, p]) => `
       <div class="search-result-item" onclick="navigate('${id}'); searchInput.value=''; resultsBox.style.display='none'">
@@ -283,6 +284,22 @@
                 resultsBox.style.display = 'none';
             }
         });
+
+        (function initTheme() {
+            const saved = localStorage.getItem('gwiki-theme') || '';
+            document.body.dataset.theme = saved;
+            document.querySelectorAll('.theme-dot').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === saved);
+                btn.addEventListener('click', () => {
+                    const t = btn.dataset.theme;
+                    document.body.dataset.theme = t;
+                    localStorage.setItem('gwiki-theme', t);
+                    document.querySelectorAll('.theme-dot').forEach(b =>
+                        b.classList.toggle('active', b.dataset.theme === t)
+                    );
+                });
+            });
+        })();
 
         navigate(location.hash.slice(1) || 'home');
         initHome();

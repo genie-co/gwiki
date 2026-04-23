@@ -29,7 +29,8 @@
             <input type="search" id="search" placeholder="Search pages…" autocomplete="off" />
             <div id="search-results"></div>
         </div>
-        <div id="current-week-code"></div>
+       
+          <div id="current-week-code"></div>
         <nav class="topnav">
             <div class="nav-group">
                 <button class="nav-group-btn" onclick="navigate('home')">Home</button>
@@ -91,7 +92,7 @@
             <div class="nav-group">
                 <button class="nav-group-btn" onclick="navigate('trainingHub')">Training</button>
                     <div class="nav-dropdown">
-                        <a class="nav-link" onclick="navigate('acDCScrew')">AC/DC Screw</a>
+                        <a class="nav-link" onclick="navigate('acScrew')">AC/DC Screw</a>
                         <a class="nav-link" onclick="navigate('ngx')">NGX</a>
                         <a class="nav-link" onclick="navigate('accessories')">Accessories</a>
                         <a class="nav-link" onclick="navigate('eloOpp')">ELO/OPP</a>
@@ -107,7 +108,15 @@
     <main id="main-content">
     </main>
     </div>
-    <footer></footer>
+    <footer>
+       
+        <div id="theme-picker">
+            <button class="theme-dot active" data-theme="" title="Mauve" style="background:#a25176"></button>
+            <button class="theme-dot" data-theme="sapphire" title="Sapphire" style="background:#5176a2"></button>
+            <button class="theme-dot" data-theme="emerald" title="Emerald" style="background:#51a276"></button>
+            <button class="theme-dot" data-theme="amethyst" title="Amethyst" style="background:#7651a2"></button>
+        </div>
+    </footer>
 
     <script src="pages/config.js"></script>
     <script src="pages/home.js"></script>
@@ -143,7 +152,7 @@
     <script src="pages/processes/warrantyClaims.js"></script>
 
     <script src="pages/training/trainingHub.js"></script>
-    <script src="pages/training/acDCScrew.js"></script>
+    <script src="pages/training/acScrew.js"></script>
     <script src="pages/training/ngx.js"></script>
     <script src="pages/training/eloOpp.js"></script>
     <script src="pages/training/chainGlide.js"></script>
